@@ -1,0 +1,21 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Tag",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 1,
+  "issingle": 0,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "description": "Generic free-text label row, reused as the child table behind Marketplace Profile.specialties, Marketplace Service.badges, Marketplace Service.features, and Marketplace Project.required_skills. These are rendered as plain tag chips in the current WordPress templates (array_slice($acc['specialties'],0,4) etc.) with no controlled vocabulary or cross-entity lookup today, so one reusable free-text child doctype is correct instead of four near-identical ones or a premature taxonomy Link.",
+  "fields": [
+    {
+      "fieldname": "label",
+      "fieldtype": "Data",
+      "label": "Label",
+      "reqd": 1,
+      "in_list_view": 1
+    }
+  ],
+  "permissions": []
+}

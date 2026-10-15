@@ -1,0 +1,356 @@
+{
+  "info": {
+    "name": "eDariba Marketplace API",
+    "description": "Public Marketplace endpoints implemented in edariba_marketplace/api/marketplace/*. Set {{base_url}} to the real site root, e.g. https://your-site.example.com. Accountants/Services/Projects/Metadata/Inquiry are live-ready once this app is installed and migrated. Search/Chat are code-complete and the embed->Qdrant pipeline was verified live end-to-end (2026-10-14) with the real EMBEDDING_API_KEY — they still need the DocTypes migrated with real published records and the key set in the server's site_config.json (never commit it) before they'll return real results instead of empty ones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "accountant_slug", "value": "hesham-elqadi" },
+    { "key": "service_slug", "value": "monthly-bookkeeping-sme" },
+    { "key": "project_slug", "value": "ecommerce-vat-cleanup" }
+  ],
+  "item": [
+    {
+      "name": "Accountants",
+      "item": [
+        {
+          "name": "List accountants",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.accountants.list_accountants?page=1&page_size=20&sort_by=experience_years&sort_order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.accountants.list_accountants"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "20" },
+                { "key": "sort_by", "value": "experience_years" },
+                { "key": "sort_order", "value": "desc" },
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "specialty", "value": "", "disabled": true },
+                { "key": "governorate", "value": "القاهرة", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get accountant by slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.accountants.get_accountant?slug={{accountant_slug}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.accountants.get_accountant"],
+              "query": [{ "key": "slug", "value": "{{accountant_slug}}" }]
+            }
+          }
+        },
+        {
+          "name": "Get accountant - not found (404 expected)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.accountants.get_accountant?slug=does-not-exist",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.accountants.get_accountant"],
+              "query": [{ "key": "slug", "value": "does-not-exist" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "List services",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.services.list_services?page=1&page_size=20&sort_by=price&sort_order=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.services.list_services"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "20" },
+                { "key": "sort_by", "value": "price" },
+                { "key": "sort_order", "value": "asc" },
+                { "key": "category", "value": "tax", "disabled": true },
+                { "key": "min_price", "value": "500", "disabled": true },
+                { "key": "max_price", "value": "5000", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get service by slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.services.get_service?slug={{service_slug}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.services.get_service"],
+              "query": [{ "key": "slug", "value": "{{service_slug}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List projects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.projects.list_projects?page=1&page_size=20&sort_by=deadline&sort_order=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.projects.list_projects"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "20" },
+                { "key": "sort_by", "value": "deadline" },
+                { "key": "sort_order", "value": "asc" },
+                { "key": "category", "value": "tax", "disabled": true },
+                { "key": "skills", "value": "لجان الطعن", "disabled": true },
+                { "key": "budget_min", "value": "5000", "disabled": true },
+                { "key": "budget_max", "value": "30000", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get project by slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.projects.get_project?slug={{project_slug}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.projects.get_project"],
+              "query": [{ "key": "slug", "value": "{{project_slug}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Metadata",
+      "item": [
+        {
+          "name": "Get filter metadata (categories, governorates, ...)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.metadata.get_metadata",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.metadata.get_metadata"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search & Chat (verified live; needs EMBEDDING_API_KEY configured server-side)",
+      "item": [
+        {
+          "name": "Unified semantic search",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.search.search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.search.search"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"محتاج محاسب متخصص في الضرائب والفاتورة الإلكترونية في القاهرة\",\n  \"entity_types\": [\"accountant\", \"service\", \"project\"],\n  \"filters\": {\n    \"location\": \"القاهرة\",\n    \"specialty\": [\"الفاتورة الإلكترونية SDK\"]\n  },\n  \"page\": 1,\n  \"page_size\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Chat discovery",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.chat.discover",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.chat.discover"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"عايز محاسب ضرائب في القاهرة\",\n  \"filters\": {},\n  \"page\": 1,\n  \"page_size\": 10\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inquiry",
+      "item": [
+        {
+          "name": "Submit inquiry (Guest-writable, rate-limited)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.inquiry.submit_inquiry",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.inquiry.submit_inquiry"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"{{accountant_slug}}\",\n  \"requester_name\": \"شركة النيل للتجارة\",\n  \"requester_email\": \"test@example.com\",\n  \"requester_phone\": \"01000000000\",\n  \"inquiry_type\": \"tax_audit\",\n  \"details\": \"استفسار تجريبي عبر Postman.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gateway (the one endpoint WordPress actually calls)",
+      "item": [
+        {
+          "name": "accountant.list",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"accountant\",\n  \"action\": \"list\",\n  \"params\": { \"page\": 1, \"page_size\": 20 }\n}" }
+          }
+        },
+        {
+          "name": "accountant.get",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"accountant\",\n  \"action\": \"get\",\n  \"params\": { \"slug\": \"{{accountant_slug}}\" }\n}" }
+          }
+        },
+        {
+          "name": "service.list",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"service\",\n  \"action\": \"list\",\n  \"params\": { \"page\": 1, \"page_size\": 20 }\n}" }
+          }
+        },
+        {
+          "name": "project.list",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"project\",\n  \"action\": \"list\",\n  \"params\": { \"page\": 1, \"page_size\": 20 }\n}" }
+          }
+        },
+        {
+          "name": "metadata.get",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"metadata\",\n  \"action\": \"get\"\n}" }
+          }
+        },
+        {
+          "name": "search.query",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"search\",\n  \"action\": \"query\",\n  \"params\": {\n    \"query\": \"محتاج محاسب متخصص في الضرائب والفاتورة الإلكترونية في القاهرة\",\n    \"entity_types\": [\"accountant\", \"service\", \"project\"],\n    \"page\": 1,\n    \"page_size\": 10\n  }\n}" }
+          }
+        },
+        {
+          "name": "chat.discover",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"chat\",\n  \"action\": \"discover\",\n  \"params\": { \"message\": \"عايز محاسب ضرائب في القاهرة\" }\n}" }
+          }
+        },
+        {
+          "name": "inquiry.submit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"inquiry\",\n  \"action\": \"submit\",\n  \"params\": {\n    \"recipient\": \"{{accountant_slug}}\",\n    \"requester_name\": \"شركة النيل للتجارة\",\n    \"requester_email\": \"test@example.com\",\n    \"requester_phone\": \"01000000000\",\n    \"inquiry_type\": \"tax_audit\",\n    \"details\": \"استفسار تجريبي عبر Postman.\"\n  }\n}" }
+          }
+        },
+        {
+          "name": "unknown.action (400 expected)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.api.marketplace.gateway.request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.api.marketplace.gateway.request"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"resource\": \"user\",\n  \"action\": \"delete_all\",\n  \"params\": {}\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reconciliation (System Manager only)",
+      "item": [
+        {
+          "name": "Reconcile Qdrant index for a DocType",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/method/edariba_marketplace.services.marketplace.indexing_service.reconcile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "method", "edariba_marketplace.services.marketplace.indexing_service.reconcile"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctype\": \"Marketplace Profile\",\n  \"limit\": 100\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

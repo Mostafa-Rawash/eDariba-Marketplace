@@ -1,0 +1,35 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Qualification",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 1,
+  "issingle": 0,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "description": "Child table backing Marketplace Profile.qualifications. Mirrors the 'title'/'issuer'/'year' keys in each accountant's qualifications array (class-dummy-data-provider.php) and the credential cards rendered in accountant-profile.php. The 'code' key that used to exist there was removed from the UI, so it is intentionally not modeled here.",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "issuer",
+      "fieldtype": "Data",
+      "label": "Issuer",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "year",
+      "fieldtype": "Data",
+      "label": "Year",
+      "in_list_view": 1,
+      "description": "Kept as Data (not Int) to match existing values like '2010' rendered as plain text, and to allow ranges if needed later."
+    }
+  ],
+  "permissions": []
+}

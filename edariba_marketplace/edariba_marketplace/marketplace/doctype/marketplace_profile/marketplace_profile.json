@@ -1,0 +1,201 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Profile",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "field:slug",
+  "naming_rule": "By fieldname",
+  "track_changes": 1,
+  "engine": "InnoDB",
+  "title_field": "display_name",
+  "image_field": "avatar",
+  "search_fields": "display_name,headline,slug",
+  "description": "Professional profile for an accountant or accounting firm, shown by card-accountant.php and accountant-profile.php. One profile per Frappe User (app.edariba login identity); this is NOT the User record itself and does not duplicate auth/credential fields. 'verified'/'stats'/'reviews'/'ledger_id'/'membership'/'languages'/'hourly_rate'/'response_time' were already removed from the live UI in a prior pass and are intentionally not modeled.",
+  "fields": [
+    {
+      "fieldname": "user",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "User",
+      "reqd": 1,
+      "unique": 1,
+      "in_standard_filter": 1,
+      "description": "The app.edariba login that owns this profile. One profile per user."
+    },
+    {
+      "fieldname": "profile_type",
+      "fieldtype": "Select",
+      "options": "Individual\nFirm",
+      "label": "Profile Type",
+      "default": "Individual",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "Replaces the name-regex guess in edariba_mp_is_firm() (helpers.php) with an explicit field. card-service.php and card-accountant.php both branch rendering on firm-vs-individual (office icon, 'مكتب مهني مرخص' vs 'معتمد سجل المحاسبين')."
+    },
+    {
+      "fieldname": "display_name",
+      "fieldtype": "Data",
+      "label": "Display Name",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "slug",
+      "fieldtype": "Data",
+      "label": "Slug",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1,
+      "description": "Used to build the public profile URL (edariba_mp_url('accountant', $acc['slug']))."
+    },
+    {
+      "fieldname": "headline",
+      "fieldtype": "Data",
+      "label": "Headline",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "e.g. 'مستشار ضرائب شركات ومحاسب قانوني'. Shown under the name on every card and the profile hero."
+    },
+    {
+      "fieldname": "column_break_location",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "governorate",
+      "fieldtype": "Select",
+      "label": "Governorate",
+      "options": "القاهرة\nالجيزة\nالإسكندرية\nالشرقية\nالدقهلية",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "Fixed list copied from Dummy_Data_Provider::governorates(). Plain Select (not a Link taxonomy) because the list is small, stable, and only ever used for this one filter today -- add options here if more governorates are needed, no new DocType required."
+    },
+    {
+      "fieldname": "area",
+      "fieldtype": "Data",
+      "label": "Area / District",
+      "description": "Free text, e.g. 'مدينة نصر والتجمع'. Combined with governorate for display as 'location' at the presentation layer; not stored redundantly here."
+    },
+    {
+      "fieldname": "experience_years",
+      "fieldtype": "Int",
+      "label": "Years of Experience",
+      "reqd": 1,
+      "in_list_view": 1,
+      "non_negative": 1
+    },
+    {
+      "fieldname": "section_break_profile",
+      "fieldtype": "Section Break",
+      "label": "Profile"
+    },
+    {
+      "fieldname": "avatar",
+      "fieldtype": "Attach Image",
+      "label": "Avatar"
+    },
+    {
+      "fieldname": "bio",
+      "fieldtype": "Text Editor",
+      "label": "Bio",
+      "reqd": 1,
+      "description": "Professional bio paragraph shown in the 'overview' section of the profile page."
+    },
+    {
+      "fieldname": "specialties",
+      "fieldtype": "Table",
+      "options": "Marketplace Tag",
+      "label": "Specialties"
+    },
+    {
+      "fieldname": "qualifications",
+      "fieldtype": "Table",
+      "options": "Marketplace Qualification",
+      "label": "Qualifications"
+    },
+    {
+      "fieldname": "section_break_case_study",
+      "fieldtype": "Section Break",
+      "label": "Case Study (optional)"
+    },
+    {
+      "fieldname": "case_study_title",
+      "fieldtype": "Data",
+      "label": "Case Study Title"
+    },
+    {
+      "fieldname": "case_study_text",
+      "fieldtype": "Small Text",
+      "label": "Case Study Text"
+    },
+    {
+      "fieldname": "section_break_status",
+      "fieldtype": "Section Break",
+      "label": "Status"
+    },
+    {
+      "fieldname": "verification_status",
+      "fieldtype": "Select",
+      "options": "Pending\nVerified\nRejected",
+      "default": "Pending",
+      "label": "Verification Status",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "Moderation-only field, not settable by the profile owner (enforced in controller + has_permission). The old 'verified' boolean badge was removed from the UI, but a live marketplace still needs a moderation gate before a profile can be published."
+    },
+    {
+      "fieldname": "column_break_status",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "publication_status",
+      "fieldtype": "Select",
+      "options": "Draft\nPublished\nUnpublished",
+      "default": "Draft",
+      "label": "Publication Status",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "published_at",
+      "fieldtype": "Datetime",
+      "label": "Published At",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "read": 1,
+      "write": 1,
+      "create": 0,
+      "delete": 0
+    },
+    {
+      "role": "Marketplace Provider",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "if_owner": 0
+    },
+    {
+      "role": "Guest",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}

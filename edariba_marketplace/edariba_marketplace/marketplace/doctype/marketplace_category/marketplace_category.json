@@ -1,0 +1,72 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Category",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "field:slug",
+  "naming_rule": "By fieldname",
+  "track_changes": 1,
+  "sort_field": "sort_order",
+  "sort_order": "ASC",
+  "engine": "InnoDB",
+  "description": "Shared category taxonomy used to filter accountants, services, and projects. One list across all three entities — Dummy_Data_Provider::service_categories() is used identically by accountants, services, and projects in the current WordPress code, so a single shared taxonomy is correct rather than three near-duplicate ones.",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "translatable": 1
+    },
+    {
+      "fieldname": "slug",
+      "fieldtype": "Data",
+      "label": "Slug",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1,
+      "description": "Matches the category keys used by the WordPress marketplace (e.g. bookkeeping, tax, e-invoice)."
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "default": "1",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "sort_order",
+      "fieldtype": "Int",
+      "label": "Sort Order",
+      "default": "0"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0
+    },
+    {
+      "role": "Guest",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}

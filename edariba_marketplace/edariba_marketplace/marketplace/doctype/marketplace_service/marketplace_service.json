@@ -1,0 +1,161 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Service",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "field:slug",
+  "naming_rule": "By fieldname",
+  "track_changes": 1,
+  "engine": "InnoDB",
+  "title_field": "title",
+  "image_field": "thumbnail",
+  "search_fields": "title,slug,category",
+  "description": "A fixed-price service package published by a provider, shown by card-service.php, services.php, and service-detail.php. 'rating'/'reviews_count'/'delivery_days' were already removed from the live UI in a prior pass and are intentionally not modeled.",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "slug",
+      "fieldtype": "Data",
+      "label": "Slug",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "provider",
+      "fieldtype": "Link",
+      "options": "Marketplace Profile",
+      "label": "Provider",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "edariba_mp_repo()->provider_for_service($service) in the current PHP layer — this field is the direct, explicit version of that lookup."
+    },
+    {
+      "fieldname": "category",
+      "fieldtype": "Link",
+      "options": "Marketplace Category",
+      "label": "Category",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "column_break_pricing",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "price",
+      "fieldtype": "Currency",
+      "label": "Price",
+      "reqd": 1,
+      "non_negative": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "currency",
+      "fieldtype": "Data",
+      "label": "Currency",
+      "default": "ج.م",
+      "reqd": 1,
+      "description": "Kept as plain Data (not an ISO currency Link) because every record in the current product uses the same single currency label; no multi-currency requirement exists in the UI today."
+    },
+    {
+      "fieldname": "price_unit",
+      "fieldtype": "Select",
+      "options": "Total\nMonthly\nPer Session",
+      "default": "Total",
+      "label": "Price Unit",
+      "reqd": 1,
+      "description": "Maps to the 'إجمالي' / '/ شهر' / 'للجلسة' values seen on price_unit in class-dummy-data-provider.php. Stored as a code; the Arabic label is resolved at the presentation layer."
+    },
+    {
+      "fieldname": "section_break_content",
+      "fieldtype": "Section Break",
+      "label": "Content"
+    },
+    {
+      "fieldname": "thumbnail",
+      "fieldtype": "Attach Image",
+      "label": "Thumbnail",
+      "reqd": 1
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Text Editor",
+      "label": "Description",
+      "reqd": 1
+    },
+    {
+      "fieldname": "badges",
+      "fieldtype": "Table",
+      "options": "Marketplace Tag",
+      "label": "Badges"
+    },
+    {
+      "fieldname": "features",
+      "fieldtype": "Table",
+      "options": "Marketplace Tag",
+      "label": "Features"
+    },
+    {
+      "fieldname": "section_break_status",
+      "fieldtype": "Section Break",
+      "label": "Status"
+    },
+    {
+      "fieldname": "publication_status",
+      "fieldtype": "Select",
+      "options": "Draft\nPublished\nUnpublished",
+      "default": "Draft",
+      "label": "Publication Status",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "published_at",
+      "fieldtype": "Datetime",
+      "label": "Published At",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "read": 1,
+      "write": 1,
+      "create": 0,
+      "delete": 0
+    },
+    {
+      "role": "Marketplace Provider",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "if_owner": 0
+    },
+    {
+      "role": "Guest",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}
