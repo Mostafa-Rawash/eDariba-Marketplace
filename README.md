@@ -147,55 +147,54 @@ filtering, but worth knowing before building on it.
 
 ## Deploy (server.edariba.com)
 
-Not deployed yet. The server runs Docker Compose project **`edariba`**
-(`~/gitops/frappe-v16.yml`, always pass `--project-name edariba`). `accounting`
-is a host checkout bind-mounted into seven services; this app is added the
-same way. The image has no copy of this app, so after the editable install
-the backend container is committed as a new image tag, so the install
-survives container re-creation.
+**Installed 2026-10-20** from `main` at `8dbfc44`. The server runs Docker
+Compose project **`edariba`** (`~/gitops/frappe-v16.yml`, always pass
+`--project-name edariba`). Like `accounting`, the app is a host checkout,
+`~/edariba-apps/marketplace`, bind-mounted into the seven app services
+(backend, configurator, frontend, queue-long, queue-short, scheduler,
+websocket). Its editable pip install is baked into image
+`frappe:16-accounting-890d5fc-r3` (= r2 + `pip install -e apps/marketplace`),
+so it survives container re-creation. The configurator rewrites
+`sites/apps.txt` from `apps/` on every start, so the mount alone registers it.
+
+What was run, for reference or a rebuild:
 
 ```bash
 ssh eDariba-Frappe
 
 # 0. Backups
 docker exec edariba-backend-1 bench --site server.edariba.com backup
-cp ~/gitops/frappe-v16.yml ~/gitops/frappe-v16.yml.bak-$(date +%Y%m%d)
+cp ~/gitops/frappe-v16.yml ~/gitops/frappe-v16.yml.bak-<date>-pre-marketplace
 
 # 1. Code (the folder name must equal the app name)
-git clone -b <branch> https://github.com/Mostafa-Rawash/eDariba-Marketplace ~/edariba-apps/marketplace
+git clone https://github.com/Mostafa-Rawash/eDariba-Marketplace ~/edariba-apps/marketplace
 
-# 2. Mount it into the same 7 services that mount accounting
-#    (backend, configurator, frontend, queue-long, queue-short, scheduler, websocket):
+# 2. Image r3 = r2 + the editable install, built in a throwaway container
+docker run --name mp-build --user frappe --entrypoint bash   -v /home/ubuntu/edariba-apps/marketplace:/home/frappe/frappe-bench/apps/marketplace   frappe:16-accounting-890d5fc-r2 -c "cd /home/frappe/frappe-bench && env/bin/pip install -e apps/marketplace"
+docker commit --change 'ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]' --change 'CMD ["start.sh"]'   --change 'USER frappe' --change 'WORKDIR /home/frappe/frappe-bench' mp-build frappe:16-accounting-890d5fc-r3
+docker rm mp-build
+
+# 3. Compose: next to each of the 7 accounting bind mounts add
 #      - type: bind
 #        source: /home/ubuntu/edariba-apps/marketplace
 #        target: /home/frappe/frappe-bench/apps/marketplace
-nano ~/gitops/frappe-v16.yml
+#    and change every image ...-r2 to ...-r3; then
+docker compose --project-name edariba -f ~/gitops/frappe-v16.yml config -q
 docker compose --project-name edariba -f ~/gitops/frappe-v16.yml up -d
 
-# 3. Install the Python package once, then freeze it into a new image tag
-docker exec edariba-backend-1 /home/frappe/frappe-bench/env/bin/pip install -e /home/frappe/frappe-bench/apps/marketplace
-docker commit edariba-backend-1 frappe:16-accounting-890d5fc-r3
-#    In frappe-v16.yml replace every image frappe:16-accounting-890d5fc-r2 with -r3, then:
-docker compose --project-name edariba -f ~/gitops/frappe-v16.yml up -d
-
-# 4. Register and install on the site
-docker exec edariba-backend-1 bash -c 'cd /home/frappe/frappe-bench && grep -qx marketplace sites/apps.txt || echo marketplace >> sites/apps.txt'
+# 4. Install on the site (syncs DocTypes and the Moderator role fixture)
 docker exec edariba-backend-1 bench --site server.edariba.com install-app marketplace
-docker exec edariba-backend-1 bench --site server.edariba.com migrate
 
-# 5. Config (values from the team password store, never from git)
+# 5. Config (secrets from the team password store, never from git)
 docker exec edariba-backend-1 bench --site server.edariba.com set-config qdrant_url "http://84.235.250.108:9080"
 docker exec edariba-backend-1 bench --site server.edariba.com set-config embedding_api_url "http://44.194.201.67:3778/embed"
-docker exec edariba-backend-1 bench --site server.edariba.com set-config embedding_api_key "<key>"
-docker exec edariba-backend-1 bench --site server.edariba.com set-config marketplace_app_url "https://app.edariba.com"
+docker exec edariba-backend-1 bench --site server.edariba.com set-config embedding_api_key "<key>"   # NOT set yet
+# marketplace_app_url defaults to https://app.edariba.com
 
-# 5b. Create the Qdrant collections (once; from any machine that reaches Qdrant)
+# 6. Qdrant collections (done)
 for c in marketplace_accountants marketplace_services marketplace_projects; do
   curl -X PUT "http://84.235.250.108:9080/collections/$c" -H 'Content-Type: application/json'     -d '{"vectors": {"size": 1024, "distance": "Cosine"}}'
 done
-
-# 6. Restart
-docker restart edariba-backend-1 edariba-frontend-1 edariba-websocket-1 edariba-scheduler-1 edariba-queue-short-1 edariba-queue-long-1
 ```
 
 Then give staff the **Marketplace Moderator** role in Desk.
@@ -206,14 +205,18 @@ Then give staff the **Marketplace Moderator** role in Desk.
 - Logged in: `workspace.list_requests` → empty list, not an error.
 
 **Later updates**: `cd ~/edariba-apps/marketplace && git pull`, then
-`migrate` and the restart in step 6.
+`docker exec edariba-backend-1 bench --site server.edariba.com migrate` and
+`docker restart edariba-backend-1 edariba-frontend-1 edariba-websocket-1 edariba-scheduler-1 edariba-queue-short-1 edariba-queue-long-1`.
+No image rebuild is needed for code changes (the install is editable); only
+for a change to `pyproject.toml` dependencies.
 
 **Rollback** (order matters: the site breaks if the code disappears while the
 app is still installed): first
 `bench --site server.edariba.com uninstall-app marketplace --yes`
-(drops the marketplace tables), then remove `marketplace` from
-`sites/apps.txt`, then put back the compose backup (r2 image, no mount) and
-`up -d`. The step 0 database backup is the fallback if uninstall fails.
+(drops the marketplace tables), then restore
+`~/gitops/frappe-v16.yml.bak-20261020-1724-pre-marketplace` (r2, no mount)
+and `up -d`. The database backup taken just before install is
+`sites/server.edariba.com/backups/20261020_202444-server_edariba_com-database.sql.gz`.
 
 **WordPress**: the gateway URL is now
 `/api/method/marketplace.api.gateway.request`; update
