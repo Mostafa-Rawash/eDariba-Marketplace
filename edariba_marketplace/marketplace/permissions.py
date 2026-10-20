@@ -12,6 +12,11 @@ Public/Guest reads are restricted to publication_status = "Published" in both
 halves — the query condition keeps unpublished rows out of list results, and
 has_permission blocks a guest from loading an unpublished doc by guessing its
 name directly.
+
+These hooks only ever narrow what a DocPerm already allows. Since 2026-10-20
+normal users hold no DocPerm on any Marketplace DocType (only Guest read on
+the public ones, plus Marketplace Moderator and System Manager), so they can
+never write through /api/resource; their writes go through api/workspace.py.
 """
 
 import frappe
@@ -19,7 +24,8 @@ import frappe
 MODERATOR_ROLES = {"System Manager", "Marketplace Moderator"}
 
 
-def _is_moderator(user: str) -> bool:
+def is_moderator(user: str | None = None) -> bool:
+	user = user or frappe.session.user
 	return bool(MODERATOR_ROLES & set(frappe.get_roles(user)))
 
 
@@ -31,7 +37,7 @@ def _published_condition(doctype_table_alias: str = "") -> str:
 # ---------------------------------------------------------------- Profile ---
 
 def profile_query_conditions(user: str) -> str:
-	if _is_moderator(user):
+	if is_moderator(user):
 		return ""
 	owned = f"`tabMarketplace Profile`.`user` = {frappe.db.escape(user)}"
 	return f"({_published_condition('tabMarketplace Profile')} OR {owned})"
@@ -39,7 +45,7 @@ def profile_query_conditions(user: str) -> str:
 
 def has_profile_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
 	user = user or frappe.session.user
-	if _is_moderator(user):
+	if is_moderator(user):
 		return True
 	if doc.publication_status == "Published" and permission_type in (None, "read"):
 		return True
@@ -49,7 +55,7 @@ def has_profile_permission(doc, user: str | None = None, permission_type: str | 
 # ---------------------------------------------------------------- Service ---
 
 def service_query_conditions(user: str) -> str:
-	if _is_moderator(user):
+	if is_moderator(user):
 		return ""
 	owned = (
 		"`tabMarketplace Service`.`provider` in "
@@ -60,7 +66,7 @@ def service_query_conditions(user: str) -> str:
 
 def has_service_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
 	user = user or frappe.session.user
-	if _is_moderator(user):
+	if is_moderator(user):
 		return True
 	if doc.publication_status == "Published" and permission_type in (None, "read"):
 		return True
@@ -71,7 +77,7 @@ def has_service_permission(doc, user: str | None = None, permission_type: str | 
 # ---------------------------------------------------------------- Project ---
 
 def project_query_conditions(user: str) -> str:
-	if _is_moderator(user):
+	if is_moderator(user):
 		return ""
 	owned = f"`tabMarketplace Project`.`client` = {frappe.db.escape(user)}"
 	return f"({_published_condition('tabMarketplace Project')} OR {owned})"
@@ -79,7 +85,7 @@ def project_query_conditions(user: str) -> str:
 
 def has_project_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
 	user = user or frappe.session.user
-	if _is_moderator(user):
+	if is_moderator(user):
 		return True
 	if doc.publication_status == "Published" and permission_type in (None, "read"):
 		return True
@@ -91,7 +97,7 @@ def has_project_permission(doc, user: str | None = None, permission_type: str | 
 def proposal_query_conditions(user: str) -> str:
 	"""Fully private: visible only to the submitting freelancer or the
 	client who owns the related project."""
-	if _is_moderator(user):
+	if is_moderator(user):
 		return ""
 	as_freelancer = (
 		"`tabMarketplace Proposal`.`submitted_by` = {user}"
@@ -105,7 +111,7 @@ def proposal_query_conditions(user: str) -> str:
 
 def has_proposal_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
 	user = user or frappe.session.user
-	if _is_moderator(user):
+	if is_moderator(user):
 		return True
 	if doc.submitted_by == user:
 		return True
@@ -116,21 +122,25 @@ def has_proposal_permission(doc, user: str | None = None, permission_type: str |
 # --------------------------------------------------------------- Inquiry ---
 
 def inquiry_query_conditions(user: str) -> str:
-	"""Fully private: visible only to the recipient provider or moderators.
-	Guests get no read access at all (enforced at the DocPerm level too)."""
-	if _is_moderator(user):
+	"""Fully private: visible only to the requester, the recipient provider,
+	or moderators. Guests get nothing (no DocPerm at all)."""
+	if is_moderator(user):
 		return ""
+	escaped = frappe.db.escape(user)
 	return (
-		"`tabMarketplace Inquiry`.`recipient` in "
-		"(select `name` from `tabMarketplace Profile` where `user` = {user})"
-	).format(user=frappe.db.escape(user))
+		"(`tabMarketplace Inquiry`.`requester` = {user} OR `tabMarketplace Inquiry`.`recipient` in "
+		"(select `name` from `tabMarketplace Profile` where `user` = {user}))"
+	).format(user=escaped)
 
 
 def has_inquiry_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
 	user = user or frappe.session.user
-	if _is_moderator(user):
+	if is_moderator(user):
 		return True
 	if permission_type == "create":
+		# Requests are created only by api/workspace.submit_request.
+		return False
+	if doc.requester == user:
 		return True
 	owner_user = frappe.db.get_value("Marketplace Profile", doc.recipient, "user")
 	return owner_user == user

@@ -1,0 +1,5 @@
+[pre_model_sync]
+# Patches added here run before the schema is synced.
+
+[post_model_sync]
+# Patches added here run after the schema is synced.

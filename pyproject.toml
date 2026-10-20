@@ -1,0 +1,19 @@
+[project]
+name = "edariba_marketplace"
+authors = [
+    { name = "eDariba", email = "dev@edariba.com" }
+]
+description = "Accountant directory, services marketplace, and freelance project marketplace for eDariba."
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # requests ships with Frappe; nothing else is needed.
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"

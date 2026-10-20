@@ -132,6 +132,29 @@
       "label": "Case Study Text"
     },
     {
+      "fieldname": "section_break_marketplace_roles",
+      "fieldtype": "Section Break",
+      "label": "Marketplace Roles"
+    },
+    {
+      "fieldname": "offers_services",
+      "fieldtype": "Check",
+      "label": "Offers Services",
+      "default": "1",
+      "description": "Accountant side: lists services and receives requests from clients."
+    },
+    {
+      "fieldname": "column_break_marketplace_roles",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "accepts_projects",
+      "fieldtype": "Check",
+      "label": "Accepts Projects",
+      "default": "0",
+      "description": "Freelancer side: can send proposals on posted projects."
+    },
+    {
       "fieldname": "section_break_status",
       "fieldtype": "Section Break",
       "label": "Status"
@@ -181,14 +204,6 @@
       "write": 1,
       "create": 0,
       "delete": 0
-    },
-    {
-      "role": "Marketplace Provider",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "if_owner": 0
     },
     {
       "role": "Guest",

@@ -11,6 +11,8 @@ it throws a TypeError in esc_html() on a missing array key. Only genuinely
 separate child-table data (qualifications, badges, features, required_skills)
 and the two case-study fields are true detail-only additions."""
 
+from edariba_marketplace.services.partner import is_partner
+
 PROFILE_LIST_FIELDS = [
 	"name",
 	"display_name",
@@ -22,6 +24,8 @@ PROFILE_LIST_FIELDS = [
 	"experience_years",
 	"avatar",
 	"bio",
+	"offers_services",
+	"accepts_projects",
 ]
 PROFILE_DETAIL_EXTRA_FIELDS = ["case_study_title", "case_study_text"]
 
@@ -60,6 +64,8 @@ PROJECT_DETAIL_EXTRA_FIELDS: list[str] = []
 def serialize_profile(doc, detail: bool = False) -> dict:
 	fields = PROFILE_LIST_FIELDS + (PROFILE_DETAIL_EXTRA_FIELDS if detail else [])
 	out = {f: doc.get(f) for f in fields}
+	# Computed from the owner, who is never exposed (doc.user is not a public field).
+	out["is_partner"] = is_partner(doc.user)
 	out["specialties"] = [row.label for row in doc.specialties]
 	if detail:
 		out["qualifications"] = [

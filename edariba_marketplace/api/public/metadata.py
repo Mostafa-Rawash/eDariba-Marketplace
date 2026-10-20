@@ -12,7 +12,7 @@ options are ever edited.
 
 import frappe
 
-from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.api.common import ok
 
 CACHE_KEY = "edariba_marketplace:metadata"
 CACHE_TTL_SECONDS = 300

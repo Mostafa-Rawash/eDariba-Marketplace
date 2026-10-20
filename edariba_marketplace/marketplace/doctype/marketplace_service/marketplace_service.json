@@ -143,14 +143,6 @@
       "delete": 0
     },
     {
-      "role": "Marketplace Provider",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 1,
-      "if_owner": 0
-    },
-    {
       "role": "Guest",
       "read": 1,
       "write": 0,

@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
+from edariba_marketplace.marketplace.permissions import is_moderator
+
 
 class MarketplaceService(Document):
 	def validate(self):
@@ -15,7 +17,7 @@ class MarketplaceService(Document):
 
 	def _guard_ownership(self):
 		"""A provider may only publish services under their own profile."""
-		if frappe.session.user == "Administrator" or "System Manager" in frappe.get_roles():
+		if frappe.session.user == "Administrator" or is_moderator():
 			return
 		owner_user = frappe.db.get_value("Marketplace Profile", self.provider, "user")
 		if owner_user and owner_user != frappe.session.user:
@@ -27,4 +29,6 @@ class MarketplaceService(Document):
 		if self.publication_status == "Published":
 			if not (self.title and self.description and self.thumbnail):
 				frappe.throw(_("Title, description, and thumbnail are required before publishing."))
+			if not frappe.db.get_value("Marketplace Profile", self.provider, "offers_services"):
+				frappe.throw(_("Turn on 'Offers Services' on the profile before publishing a service."))
 			self.published_at = now_datetime()

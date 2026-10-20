@@ -1,5 +1,16 @@
 # eDariba Marketplace — Integration Audit & UI Placement Recommendation
 
+> **Status update (2026-10-20).** This report is a point-in-time audit. Module paths below were updated to the new layout (`api/public/`, `api/gateway.py`, flat `services/`); references to `eDariba-Marketplace/edariba_marketplace/` mean the repo root now. Decisions taken since:
+> - **J1** yes: install on server.edariba.com beside `accounting`. No `accounting` code changes.
+> - **J2** no exemption: everyone goes through ETA onboarding.
+> - **J3** login required. Guest inquiry endpoint and Guest create DocPerm removed (fixes **S1**).
+> - **J4 = C**: anyone can apply, a moderator verifies, an active Partner plan shows an `is_partner` badge.
+> - **J5**: a request belongs to the User only; no company link in v1.
+> - **J6**: implemented as `New → Responded → Accepted → Closed`, Declined by the provider, Cancelled by the requester (`services/request_rules.py`).
+> - Roles: no `Marketplace Provider` / `Marketplace Client` roles. One profile per user with `offers_services` / `accepts_projects` switches; only `Marketplace Moderator` is added (fixture).
+> - `chat.discover` merged into `search.search(auto_intent=1)`.
+> - Done in the backend: A1 (packaging), A2, A3 (as above), A4 (`api/workspace.py`), A5 (emails), A9. See `README.md` for what remains and the deploy steps.
+
 ## Context
 
 The Marketplace was built in three separate places: a WordPress plugin and theme templates, a new Frappe app (`edariba_marketplace`), and a Qdrant/embedding layer. None of it has been tested end to end, and none of it is connected to the authenticated product (`pre-edariba` at app.edariba.com, backed by Frappe at server.edariba.com). This report covers what exists, where each Marketplace feature should live, and the smallest secure integration that connects the full journey: discovery → login → request → notification → response.

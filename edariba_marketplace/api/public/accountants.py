@@ -7,7 +7,7 @@ Routes (once this app is installed on the real site):
 
 import frappe
 
-from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.api.common import ok
 from edariba_marketplace.services import repository
 from edariba_marketplace.services.filters import (
 	ACCOUNTANT_SORT_FIELDS,
@@ -43,11 +43,8 @@ def list_accountants(
 			return ok([], page=page, page_size=page_size, total=0, meta={"q": q, "specialty": specialty})
 		filters["name"] = ["in", matching]
 
-	rows, total = repository.list_profiles(filters, order_by, page, page_size)
-
-	if q:
-		q_lower = q.lower()
-		rows = [r for r in rows if q_lower in (r.display_name or "").lower() or q_lower in (r.headline or "").lower()]
+	or_filters = repository.text_search(q, ["display_name", "headline"])
+	rows, total = repository.list_profiles(filters, order_by, page, page_size, or_filters)
 
 	return ok(rows, page=page, page_size=page_size, total=total, meta={"q": q, "specialty": specialty, "governorate": governorate})
 

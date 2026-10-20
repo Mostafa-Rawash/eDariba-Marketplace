@@ -1,0 +1,10 @@
+[
+  {
+    "doctype": "Role",
+    "name": "Marketplace Moderator",
+    "role_name": "Marketplace Moderator",
+    "desk_access": 1,
+    "disabled": 0,
+    "is_custom": 0
+  }
+]

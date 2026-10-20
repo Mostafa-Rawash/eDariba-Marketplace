@@ -1,5 +1,7 @@
 """Single-endpoint gateway for WordPress, per explicit request (2026-10-15):
-one URL instead of nine separate whitelisted methods.
+one URL instead of several separate whitelisted methods. Read-only: every
+write by a person happens in the logged-in app (api/workspace.py), never
+through WordPress.
 
 Route:
   POST /api/method/edariba_marketplace.api.gateway.request
@@ -7,8 +9,8 @@ Route:
 
 This does NOT duplicate business logic — every (resource, action) pair below
 is a direct call into the same functions already built in api/public/
-(accountants.py / services.py / projects.py / metadata.py / search.py /
-chat.py / inquiry.py). The gateway is purely a router: it validates
+(accountants.py / services.py / projects.py / metadata.py / search.py).
+The gateway is purely a router: it validates
 (resource, action) against an explicit allowlist, then forwards `params` as
 kwargs to the matching function. No dynamic attribute lookup from
 client-supplied strings — the dispatch table below is the only thing that
@@ -18,7 +20,7 @@ Frappe method by name.
 
 import frappe
 
-from edariba_marketplace.api.public import accountants, chat, inquiry, metadata, projects, search, services
+from edariba_marketplace.api.public import accountants, metadata, projects, search, services
 
 _DISPATCH = {
 	("accountant", "list"): accountants.list_accountants,
@@ -29,8 +31,6 @@ _DISPATCH = {
 	("project", "get"): projects.get_project,
 	("metadata", "get"): metadata.get_metadata,
 	("search", "query"): search.search,
-	("chat", "discover"): chat.discover,
-	("inquiry", "submit"): inquiry.submit_inquiry,
 }
 
 

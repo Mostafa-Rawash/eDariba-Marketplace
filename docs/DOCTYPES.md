@@ -1,14 +1,14 @@
 # Marketplace DocTypes
 
-Generated from the DocType JSON definitions in `edariba_marketplace/marketplace/doctype/`. Regenerate after schema changes rather than editing by hand.
+Generated from the DocType JSON definitions in `edariba_marketplace/marketplace/doctype/` by `scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.
 
 8 DocTypes.
 
 | DocType | Module | Naming | Child table | Fields |
 |---|---|---|---|---|
 | [Marketplace Category](#marketplace-category) | Marketplace | field:slug | No | 4 |
-| [Marketplace Inquiry](#marketplace-inquiry) | Marketplace | hash | No | 9 |
-| [Marketplace Profile](#marketplace-profile) | Marketplace | field:slug | No | 17 |
+| [Marketplace Inquiry](#marketplace-inquiry) | Marketplace | hash | No | 12 |
+| [Marketplace Profile](#marketplace-profile) | Marketplace | field:slug | No | 19 |
 | [Marketplace Project](#marketplace-project) | Marketplace | field:slug | No | 15 |
 | [Marketplace Proposal](#marketplace-proposal) | Marketplace | hash | No | 9 |
 | [Marketplace Qualification](#marketplace-qualification) | Marketplace |  | Yes | 3 |
@@ -41,7 +41,7 @@ Shared category taxonomy used to filter accountants, services, and projects. One
 
 ## Marketplace Inquiry
 
-Backs the real 'استفسار مباشر وسري' form in accountant-profile.php (currently rendered with data-edariba-demo-form, i.e. it intentionally does not submit yet). Field names below are copied 1:1 from that form's actual name= attributes, not invented. Fully private: no public read, ever.
+A request from a logged-in client to one accountant (Marketplace Profile). Created only through edariba_marketplace.api.workspace.submit_request; users have no DocPerm on it. Fully private.
 
 - **Module:** `Marketplace`
 - **Naming:** `hash`
@@ -52,14 +52,18 @@ Backs the real 'استفسار مباشر وسري' form in accountant-profile.p
 | `recipient` | Recipient | Link | Marketplace Profile | ✓ |  |  | ✓ |  |
 | `related_service` | Related Service | Link | Marketplace Service |  |  |  |  |  |
 | _Requester_ (Section Break) | | | | | | | | |
+| `requester` | Requester | Link | User | ✓ |  |  |  | ✓ |
 | `requester_name` | Requester Name | Data |  | ✓ |  |  |  |  |
 | `requester_email` | Requester Email | Data | Email | ✓ |  |  |  |  |
-| `requester_phone` | Requester Phone | Data |  | ✓ |  |  |  |  |
+| `requester_phone` | Requester Phone | Data |  |  |  |  |  |  |
 | `inquiry_type` | Inquiry Type | Select | tax_audit, einvoice, annual_return, consultation |  |  |  |  |  |
 | `details` | Details | Small Text |  | ✓ |  |  |  |  |
 | _Status_ (Section Break) | | | | | | | | |
-| `status` | Status | Select | New, Contacted, Closed |  |  | New | ✓ |  |
+| `status` | Status | Select | New, Responded, Accepted, Declined, Closed, Cancelled |  |  | New | ✓ | ✓ |
 | `created_at` | Created At | Datetime |  |  |  |  |  | ✓ |
+| _Response_ (Section Break) | | | | | | | | |
+| `response` | Response | Small Text |  |  |  |  |  | ✓ |
+| `responded_at` | Responded At | Datetime |  |  |  |  |  | ✓ |
 
 **Permissions**
 
@@ -67,8 +71,6 @@ Backs the real 'استفسار مباشر وسري' form in accountant-profile.p
 |---|---|---|---|---|---|
 | System Manager | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Marketplace Provider | ✓ | ✓ |  |  |  |
-| Guest |  |  | ✓ |  |  |
 
 ## Marketplace Profile
 
@@ -97,6 +99,9 @@ Professional profile for an accountant or accounting firm, shown by card-account
 | _Case Study (optional)_ (Section Break) | | | | | | | | |
 | `case_study_title` | Case Study Title | Data |  |  |  |  |  |  |
 | `case_study_text` | Case Study Text | Small Text |  |  |  |  |  |  |
+| _Marketplace Roles_ (Section Break) | | | | | | | | |
+| `offers_services` | Offers Services | Check |  |  |  | 1 |  |  |
+| `accepts_projects` | Accepts Projects | Check |  |  |  | 0 |  |  |
 | _Status_ (Section Break) | | | | | | | | |
 | `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Pending | ✓ | ✓ |
 | `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |
@@ -108,7 +113,6 @@ Professional profile for an accountant or accounting firm, shown by card-account
 |---|---|---|---|---|---|
 | System Manager | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Marketplace Provider | ✓ | ✓ | ✓ |  |  |
 | Guest | ✓ |  |  |  |  |
 
 ## Marketplace Project
@@ -147,8 +151,6 @@ A freelance project posted by a client, shown by card-project.php, project-detai
 |---|---|---|---|---|---|
 | System Manager | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Marketplace Client | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Provider | ✓ |  |  |  |  |
 | Guest | ✓ |  |  |  |  |
 
 ## Marketplace Proposal
@@ -179,8 +181,6 @@ ASSUMPTION / NOT YET IN THE WORDPRESS UI: project-detail.php's 'تقديم عر�
 |---|---|---|---|---|---|
 | System Manager | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | ✓ |  |  |  |  |
-| Marketplace Provider | ✓ | ✓ | ✓ |  |  |
-| Marketplace Client | ✓ | ✓ |  |  |  |
 
 ## Marketplace Qualification
 
@@ -228,7 +228,6 @@ A fixed-price service package published by a provider, shown by card-service.php
 |---|---|---|---|---|---|
 | System Manager | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Marketplace Provider | ✓ | ✓ | ✓ | ✓ |  |
 | Guest | ✓ |  |  |  |  |
 
 ## Marketplace Tag

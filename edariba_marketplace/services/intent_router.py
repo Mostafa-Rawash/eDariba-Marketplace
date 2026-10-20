@@ -1,5 +1,5 @@
-"""Deterministic keyword -> entity_type classification for the Chat
-discovery endpoint. This is NOT an LLM — no external calls, fully testable.
+"""Deterministic keyword -> entity_type classification for search.search(auto_intent=1)
+(the former Chat discovery endpoint). This is NOT an LLM — no external calls, fully testable.
 
 Ported 1:1 from the existing WordPress Chat_Router
 (plugins/edariba-marketplace/includes/class-chat-router.php) rather than

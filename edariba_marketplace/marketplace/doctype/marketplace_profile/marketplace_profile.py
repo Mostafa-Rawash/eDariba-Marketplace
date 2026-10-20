@@ -3,12 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-MODERATOR_ROLES = {"System Manager", "Marketplace Moderator"}
-
-
-def _is_moderator(user: str | None = None) -> bool:
-	user = user or frappe.session.user
-	return bool(MODERATOR_ROLES & set(frappe.get_roles(user)))
+from edariba_marketplace.marketplace.permissions import is_moderator
 
 
 class MarketplaceProfile(Document):
@@ -29,7 +24,7 @@ class MarketplaceProfile(Document):
 				frappe.throw(_("New profiles always start as Pending verification."))
 			return
 
-		if self.has_value_changed("verification_status") and not _is_moderator():
+		if self.has_value_changed("verification_status") and not is_moderator():
 			frappe.throw(_("Only a moderator can change verification status."))
 
 	def _guard_publish_transition(self):

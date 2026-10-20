@@ -7,11 +7,14 @@ app_description = "Accountant directory, services marketplace, and freelance pro
 app_email = "dev@edariba.com"
 app_license = "proprietary"
 
-# Roles this app expects to exist (create via fixtures/patch, not here):
-#   "Marketplace Moderator" — can verify profiles, moderate listings, read all inquiries.
-# "System Manager" already covers full admin access; no separate "Marketplace Admin" role
-# is introduced since System Manager already satisfies that need (fewer roles = fewer
-# places for a permission rule to drift).
+# The only role this app adds. "Marketplace Moderator" verifies profiles, moderates
+# listings, and reads all requests in Desk. "System Manager" already covers full admin.
+#
+# There are deliberately no provider/client roles: what a user can do in the
+# marketplace comes from their records (a Marketplace Profile they own, with its
+# offers_services / accepts_projects switches; requests they sent), and every
+# write by a normal user goes through api/workspace.py, never /api/resource.
+fixtures = [{"dt": "Role", "filters": [["name", "=", "Marketplace Moderator"]]}]
 
 permission_query_conditions = {
 	"Marketplace Profile": "edariba_marketplace.marketplace.permissions.profile_query_conditions",

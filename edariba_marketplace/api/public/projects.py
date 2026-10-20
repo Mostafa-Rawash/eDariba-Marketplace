@@ -7,7 +7,7 @@ Routes:
 
 import frappe
 
-from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.api.common import ok
 from edariba_marketplace.services import repository
 from edariba_marketplace.services.filters import (
 	PROJECT_SORT_FIELDS,
@@ -50,11 +50,7 @@ def list_projects(
 			return ok([], page=page, page_size=page_size, total=0, meta={"q": q, "skills": skills})
 		filters["name"] = ["in", matching]
 
-	rows, total = repository.list_projects(filters, order_by, page, page_size)
-
-	if q:
-		q_lower = q.lower()
-		rows = [r for r in rows if q_lower in (r.title or "").lower()]
+	rows, total = repository.list_projects(filters, order_by, page, page_size, repository.text_search(q, ["title"]))
 
 	return ok(rows, page=page, page_size=page_size, total=total, meta={"q": q, "category": category, "skills": skills})
 

@@ -11,6 +11,7 @@ permission hooks enforce the same rule independently.
 
 import frappe
 
+from edariba_marketplace.services.partner import partner_users
 from edariba_marketplace.services.serializers import (
 	PROFILE_LIST_FIELDS,
 	PROJECT_LIST_FIELDS,
@@ -21,19 +22,60 @@ from edariba_marketplace.services.serializers import (
 )
 
 
-def _paginate(filters: dict, doctype: str, fields: list[str], order_by: str, page: int, page_size: int):
+def _paginate(
+	filters: dict,
+	doctype: str,
+	fields: list[str],
+	order_by: str,
+	page: int,
+	page_size: int,
+	or_filters: dict | None = None,
+):
+	"""`or_filters` carries the free-text `q` search, applied in SQL before the
+	page is cut so `total` and page sizes are right."""
 	start = (page - 1) * page_size
 	rows = frappe.get_all(
 		doctype,
 		filters=filters,
+		or_filters=or_filters,
 		fields=fields,
 		order_by=order_by,
 		limit_start=start,
 		limit_page_length=page_size,
 		ignore_permissions=True,
 	)
-	total = frappe.db.count(doctype, filters=filters)
+	if or_filters:
+		# frappe.db.count has no or_filters; the published catalog is small.
+		total = len(frappe.get_all(doctype, filters=filters, or_filters=or_filters, pluck="name", ignore_permissions=True))
+	else:
+		total = frappe.db.count(doctype, filters=filters)
 	return rows, total
+
+
+def text_search(q: str, fieldnames: list[str]) -> dict | None:
+	"""or_filters matching `q` as a substring of any of `fieldnames`."""
+	q = (q or "").strip()
+	if not q:
+		return None
+	return {f: ["like", f"%{q}%"] for f in fieldnames}
+
+
+def _attach_partner_badge(rows: list) -> None:
+	"""Adds `is_partner` to a page of profile rows without exposing `user`."""
+	if not rows:
+		return
+	owners = dict(
+		frappe.get_all(
+			"Marketplace Profile",
+			filters={"name": ["in", [r["name"] for r in rows]]},
+			fields=["name", "user"],
+			as_list=True,
+			ignore_permissions=True,
+		)
+	)
+	partners = partner_users([u for u in owners.values() if u])
+	for row in rows:
+		row["is_partner"] = owners.get(row["name"]) in partners
 
 
 def _attach_tag_field(rows: list, parent_doctype: str, tag_fieldname: str, out_key: str) -> None:
@@ -63,10 +105,11 @@ def _attach_tag_field(rows: list, parent_doctype: str, tag_fieldname: str, out_k
 
 # --------------------------------------------------------------- Profiles ---
 
-def list_profiles(filters: dict, order_by: str, page: int, page_size: int):
+def list_profiles(filters: dict, order_by: str, page: int, page_size: int, or_filters: dict | None = None):
 	filters = {**filters, "publication_status": "Published"}
-	rows, total = _paginate(filters, "Marketplace Profile", PROFILE_LIST_FIELDS, order_by, page, page_size)
+	rows, total = _paginate(filters, "Marketplace Profile", PROFILE_LIST_FIELDS, order_by, page, page_size, or_filters)
 	_attach_tag_field(rows, "Marketplace Profile", "specialties", "specialties")
+	_attach_partner_badge(rows)
 	return rows, total
 
 
@@ -98,9 +141,9 @@ def published_services_for_provider(provider_name: str, limit: int = 20):
 
 # ---------------------------------------------------------------- Services ---
 
-def list_services(filters: dict, order_by: str, page: int, page_size: int):
+def list_services(filters: dict, order_by: str, page: int, page_size: int, or_filters: dict | None = None):
 	filters = {**filters, "publication_status": "Published"}
-	rows, total = _paginate(filters, "Marketplace Service", SERVICE_LIST_FIELDS, order_by, page, page_size)
+	rows, total = _paginate(filters, "Marketplace Service", SERVICE_LIST_FIELDS, order_by, page, page_size, or_filters)
 	_attach_tag_field(rows, "Marketplace Service", "badges", "badges")
 	_attach_tag_field(rows, "Marketplace Service", "features", "features")
 	return rows, total
@@ -118,9 +161,9 @@ def get_service_by_slug(slug: str):
 
 # ---------------------------------------------------------------- Projects ---
 
-def list_projects(filters: dict, order_by: str, page: int, page_size: int):
+def list_projects(filters: dict, order_by: str, page: int, page_size: int, or_filters: dict | None = None):
 	filters = {**filters, "publication_status": "Published"}
-	rows, total = _paginate(filters, "Marketplace Project", PROJECT_LIST_FIELDS, order_by, page, page_size)
+	rows, total = _paginate(filters, "Marketplace Project", PROJECT_LIST_FIELDS, order_by, page, page_size, or_filters)
 	_attach_tag_field(rows, "Marketplace Project", "required_skills", "required_skills")
 	return rows, total
 

@@ -8,12 +8,17 @@ ACTIVE_STATUSES = {"Submitted", "Shortlisted"}
 
 class MarketplaceProposal(Document):
 	def validate(self):
+		self._guard_freelancer_accepts_projects()
 		self._guard_submitter_matches_freelancer()
 		self._guard_not_own_project()
 		self._guard_duplicate_active_proposal()
 		if self.is_new():
 			self.submitted_at = now_datetime()
 			self.status = "Submitted"
+
+	def _guard_freelancer_accepts_projects(self):
+		if self.is_new() and not frappe.db.get_value("Marketplace Profile", self.freelancer, "accepts_projects"):
+			frappe.throw(_("Turn on 'Accepts Projects' on your profile before sending proposals."))
 
 	def _guard_submitter_matches_freelancer(self):
 		owner_user = frappe.db.get_value("Marketplace Profile", self.freelancer, "user")

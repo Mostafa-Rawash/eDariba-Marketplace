@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime, today
 
+from edariba_marketplace.marketplace.permissions import is_moderator
+
 
 class MarketplaceProject(Document):
 	def validate(self):
@@ -16,7 +18,7 @@ class MarketplaceProject(Document):
 		self._guard_publish_transition()
 
 	def _guard_ownership(self):
-		if frappe.session.user == "Administrator" or "System Manager" in frappe.get_roles():
+		if frappe.session.user == "Administrator" or is_moderator():
 			return
 		if self.client and self.client != frappe.session.user:
 			frappe.throw(_("You can only manage your own projects."))
