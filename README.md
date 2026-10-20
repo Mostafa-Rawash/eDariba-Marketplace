@@ -5,6 +5,9 @@ for eDariba. Installed beside `accounting` on the same Frappe site
 (server.edariba.com), so the app at app.edariba.com reaches it with the
 user's existing session. It does not change any `accounting` code.
 
+**Building the app screens or the WordPress pages?** Start with
+[docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md).
+
 **Source of truth for the DocTypes**: the WordPress marketplace plugin and
 theme templates (`plugins/edariba-marketplace/includes/class-dummy-data-provider.php`,
 `themes/edariba-theme/marketplace/*.php`).
@@ -13,7 +16,7 @@ theme templates (`plugins/edariba-marketplace/includes/class-dummy-data-provider
 
 ```
 pyproject.toml            packaging (bench get-app / pip install -e)
-docs/                     INTEGRATION_AUDIT.md, DOCTYPES.md, STITCH_UI_PROMPTS.md
+docs/                     DEVELOPER_GUIDE.md, INTEGRATION_AUDIT.md, DOCTYPES.md, STITCH_UI_PROMPTS.md
 postman/                  every endpoint with example requests
 marketplace/
   hooks.py  patches.txt  modules.txt
