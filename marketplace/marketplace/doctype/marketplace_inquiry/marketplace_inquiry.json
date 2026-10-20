@@ -18,7 +18,8 @@
       "label": "Recipient",
       "reqd": 1,
       "in_list_view": 1,
-      "in_standard_filter": 1
+      "in_standard_filter": 1,
+      "search_index": 1
     },
     {
       "fieldname": "related_service",
@@ -40,7 +41,8 @@
       "reqd": 1,
       "read_only": 1,
       "in_standard_filter": 1,
-      "description": "Set from the session by submit_request, never from the client."
+      "description": "Set from the session by submit_request, never from the client.",
+      "search_index": 1
     },
     {
       "fieldname": "requester_name",

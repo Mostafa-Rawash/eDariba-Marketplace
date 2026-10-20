@@ -50,6 +50,8 @@ def _load_as_party(name: str):
 	requester nor the provider gets the same 'not found' as for a missing id,
 	so request ids cannot be probed."""
 	user = _user()
+	# exists() first: get_doc on a missing name would also queue its own
+	# "not found" message for the client.
 	doc = frappe.get_doc("Marketplace Inquiry", name) if frappe.db.exists("Marketplace Inquiry", name) else None
 	if doc is not None:
 		if doc.requester == user:
@@ -93,10 +95,15 @@ def submit_request(
 	phone: str | None = None,
 ):
 	user = _user()
-	# Lock the caller's User row for the rest of this request's transaction, so
-	# two simultaneous submits by the same user run one after the other and the
-	# duplicate and rate checks below cannot both pass before either insert.
-	frappe.db.get_value("User", user, "name", for_update=True)
+	details = (details or "").strip()
+	if not details:
+		frappe.throw(_("Please describe what you need."))
+
+	# Reading the caller's User row FOR UPDATE locks it for the rest of this
+	# request's transaction, so two simultaneous submits by the same user run
+	# one after the other and the duplicate and rate checks below cannot both
+	# pass before either insert.
+	account = frappe.db.get_value("User", user, ["full_name", "email", "mobile_no"], as_dict=True, for_update=True)
 
 	profile = frappe.db.get_value(
 		"Marketplace Profile",
@@ -121,9 +128,6 @@ def submit_request(
 		if not service or service.provider != recipient or service.publication_status != "Published":
 			frappe.throw(_("This service is not available from this accountant."))
 
-	if not (details or "").strip():
-		frappe.throw(_("Please describe what you need."))
-
 	if frappe.db.exists(
 		"Marketplace Inquiry",
 		{"requester": user, "recipient": recipient, "status": ["in", list(request_rules.OPEN_STATUSES)]},
@@ -137,14 +141,13 @@ def submit_request(
 	if recent >= REQUEST_LIMIT_PER_HOUR:
 		frappe.throw(_("You have sent too many requests. Please try again later."), frappe.RateLimitExceededError)
 
-	account = frappe.db.get_value("User", user, ["full_name", "email", "mobile_no"], as_dict=True)
 	doc = frappe.get_doc(
 		{
 			"doctype": "Marketplace Inquiry",
 			"recipient": recipient,
 			"related_service": related_service or None,
 			"inquiry_type": inquiry_type or None,
-			"details": details.strip(),
+			"details": details,
 			"requester": user,
 			"requester_name": account.full_name or account.email,
 			"requester_email": account.email,

@@ -10,10 +10,24 @@ never a broken directory page.
 
 import frappe
 
+# Directory and search pages ask once per profile shown, mostly as Guest. A
+# plan change shows up on the badge within this many seconds.
+CACHE_TTL_SECONDS = 600
+
 
 def is_partner(user: str | None) -> bool:
 	if not user:
 		return False
+	key = f"marketplace:partner:{user}"
+	cached = frappe.cache().get_value(key)
+	if cached is not None:
+		return bool(cached)
+	value = _lookup(user)
+	frappe.cache().set_value(key, int(value), expires_in_sec=CACHE_TTL_SECONDS)
+	return value
+
+
+def _lookup(user: str) -> bool:
 	try:
 		from accounting.tenant.workspace import own_tenant
 		from accounting.tenant.workspace_api import has_active_reseller_plan

@@ -50,6 +50,13 @@ def validate_price_range(min_value, max_value):
 		frappe.throw("max value cannot be less than min value.")
 
 
+def like_literal(text: str) -> str:
+	"""`text` escaped for use inside a LIKE pattern, so backslash, % and _ match
+	themselves instead of acting as wildcards (MariaDB's default LIKE escape
+	character is backslash)."""
+	return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def names_matching_tag(parent_doctype: str, tag_fieldname: str, text: str) -> list[str]:
 	"""Free-text match against a Marketplace Tag child table (e.g.
 	Project.required_skills, Profile.specialties). Mirrors the plain-text
@@ -64,7 +71,7 @@ def names_matching_tag(parent_doctype: str, tag_fieldname: str, text: str) -> li
 		select distinct parent from `tabMarketplace Tag`
 		where parenttype = %s and parentfield = %s and label like %s
 		""",
-		(parent_doctype, tag_fieldname, f"%{text}%"),
+		(parent_doctype, tag_fieldname, f"%{like_literal(text)}%"),
 		as_dict=False,
 	)
 	return [r[0] for r in rows]

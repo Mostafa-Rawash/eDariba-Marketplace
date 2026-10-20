@@ -11,6 +11,7 @@ permission hooks enforce the same rule independently.
 
 import frappe
 
+from marketplace.services.filters import like_literal
 from marketplace.services.partner import partner_users
 from marketplace.services.serializers import (
 	PROFILE_LIST_FIELDS,
@@ -53,17 +54,11 @@ def _paginate(
 
 
 def text_search(q: str, fieldnames: list[str]) -> dict | None:
-	"""or_filters matching `q` as a literal substring of any of `fieldnames`.
-	Backslash, % and _ are escaped so they match themselves instead of acting
-	as LIKE wildcards (MariaDB's default LIKE escape character is backslash)."""
+	"""or_filters matching `q` as a literal substring of any of `fieldnames`."""
 	q = (q or "").strip()
 	if not q:
 		return None
 	return {f: ["like", f"%{like_literal(q)}%"] for f in fieldnames}
-
-
-def like_literal(text: str) -> str:
-	return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def _attach_partner_badge(rows: list) -> None:
