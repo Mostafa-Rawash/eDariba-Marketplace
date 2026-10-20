@@ -44,6 +44,13 @@ marketplace/
   DocType, so `/api/resource` is closed to them; every write goes through
   `api/workspace.py`, which takes the user from the session and checks
   ownership itself.
+- **Public reads stay open for SEO, private fields are hidden.** Guest keeps
+  read on published Profiles, Services and Projects, but the fields that
+  identify a person sit at permlevel 1, which Guests never receive (in
+  `/api/resource` lists or single reads): Profile `user` and
+  `verification_status`, Project `client`. Only System Manager and
+  Marketplace Moderator have level-1 access. The public API serializers never
+  returned these fields anyway.
 - **Requests need login** (J3). The old guest `inquiry.submit_inquiry`
   endpoint and the Guest create permission are gone; a guest
   `POST /api/resource/Marketplace Inquiry` is refused.

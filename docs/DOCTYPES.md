@@ -24,20 +24,20 @@ Shared category taxonomy used to filter accountants, services, and projects. One
 - **Track changes:** `Yes`
 - **Sort:** `sort_order ASC`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `title` | Title | Data |  | ✓ |  |  | ✓ |  |
-| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |
-| `is_active` | Is Active | Check |  |  |  | 1 | ✓ |  |
-| `sort_order` | Sort Order | Int |  |  |  | 0 |  |  |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
+| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `is_active` | Is Active | Check |  |  |  | 1 | ✓ |  |  |
+| `sort_order` | Sort Order | Int |  |  |  | 0 |  |  |  |
 
 **Permissions**
 
-| Role | Read | Write | Create | Delete | If owner |
-|---|---|---|---|---|---|
-| System Manager | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | ✓ | ✓ | ✓ |  |  |
-| Guest | ✓ |  |  |  |  |
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ | ✓ | ✓ |  |  |
+| Guest | 0 | ✓ |  |  |  |  |
 
 ## Marketplace Inquiry
 
@@ -47,30 +47,30 @@ A request from a logged-in client to one accountant (Marketplace Profile). Creat
 - **Naming:** `hash`
 - **Track changes:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `recipient` | Recipient | Link | Marketplace Profile | ✓ |  |  | ✓ |  |
-| `related_service` | Related Service | Link | Marketplace Service |  |  |  |  |  |
-| _Requester_ (Section Break) | | | | | | | | |
-| `requester` | Requester | Link | User | ✓ |  |  |  | ✓ |
-| `requester_name` | Requester Name | Data |  | ✓ |  |  |  |  |
-| `requester_email` | Requester Email | Data | Email | ✓ |  |  |  |  |
-| `requester_phone` | Requester Phone | Data |  |  |  |  |  |  |
-| `inquiry_type` | Inquiry Type | Select | tax_audit, einvoice, annual_return, consultation |  |  |  |  |  |
-| `details` | Details | Small Text |  | ✓ |  |  |  |  |
-| _Status_ (Section Break) | | | | | | | | |
-| `status` | Status | Select | New, Responded, Accepted, Declined, Closed, Cancelled |  |  | New | ✓ | ✓ |
-| `created_at` | Created At | Datetime |  |  |  |  |  | ✓ |
-| _Response_ (Section Break) | | | | | | | | |
-| `response` | Response | Small Text |  |  |  |  |  | ✓ |
-| `responded_at` | Responded At | Datetime |  |  |  |  |  | ✓ |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `recipient` | Recipient | Link | Marketplace Profile | ✓ |  |  | ✓ |  |  |
+| `related_service` | Related Service | Link | Marketplace Service |  |  |  |  |  |  |
+| _Requester_ (Section Break) | | | | | | | | | |
+| `requester` | Requester | Link | User | ✓ |  |  |  | ✓ |  |
+| `requester_name` | Requester Name | Data |  | ✓ |  |  |  |  |  |
+| `requester_email` | Requester Email | Data | Email | ✓ |  |  |  |  |  |
+| `requester_phone` | Requester Phone | Data |  |  |  |  |  |  |  |
+| `inquiry_type` | Inquiry Type | Select | tax_audit, einvoice, annual_return, consultation |  |  |  |  |  |  |
+| `details` | Details | Small Text |  | ✓ |  |  |  |  |  |
+| _Status_ (Section Break) | | | | | | | | | |
+| `status` | Status | Select | New, Responded, Accepted, Declined, Closed, Cancelled |  |  | New | ✓ | ✓ |  |
+| `created_at` | Created At | Datetime |  |  |  |  |  | ✓ |  |
+| _Response_ (Section Break) | | | | | | | | | |
+| `response` | Response | Small Text |  |  |  |  |  | ✓ |  |
+| `responded_at` | Responded At | Datetime |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
-| Role | Read | Write | Create | Delete | If owner |
-|---|---|---|---|---|---|
-| System Manager | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | ✓ | ✓ |  |  |  |
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
 
 ## Marketplace Profile
 
@@ -81,39 +81,41 @@ Professional profile for an accountant or accounting firm, shown by card-account
 - **Title field:** `display_name`
 - **Track changes:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `user` | User | Link | User | ✓ | ✓ |  |  |  |
-| `profile_type` | Profile Type | Select | Individual, Firm | ✓ |  | Individual | ✓ |  |
-| `display_name` | Display Name | Data |  | ✓ |  |  | ✓ |  |
-| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |
-| `headline` | Headline | Data |  | ✓ |  |  | ✓ |  |
-| `governorate` | Governorate | Select | القاهرة, الجيزة, الإسكندرية, الشرقية, الدقهلية | ✓ |  |  | ✓ |  |
-| `area` | Area / District | Data |  |  |  |  |  |  |
-| `experience_years` | Years of Experience | Int |  | ✓ |  |  | ✓ |  |
-| _Profile_ (Section Break) | | | | | | | | |
-| `avatar` | Avatar | Attach Image |  |  |  |  |  |  |
-| `bio` | Bio | Text Editor |  | ✓ |  |  |  |  |
-| `specialties` | Specialties | Table | Marketplace Tag |  |  |  |  |  |
-| `qualifications` | Qualifications | Table | Marketplace Qualification |  |  |  |  |  |
-| _Case Study (optional)_ (Section Break) | | | | | | | | |
-| `case_study_title` | Case Study Title | Data |  |  |  |  |  |  |
-| `case_study_text` | Case Study Text | Small Text |  |  |  |  |  |  |
-| _Marketplace Roles_ (Section Break) | | | | | | | | |
-| `offers_services` | Offers Services | Check |  |  |  | 1 |  |  |
-| `accepts_projects` | Accepts Projects | Check |  |  |  | 0 |  |  |
-| _Status_ (Section Break) | | | | | | | | |
-| `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Pending | ✓ | ✓ |
-| `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |
-| `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `user` | User | Link | User | ✓ | ✓ |  |  |  | 1 |
+| `profile_type` | Profile Type | Select | Individual, Firm | ✓ |  | Individual | ✓ |  |  |
+| `display_name` | Display Name | Data |  | ✓ |  |  | ✓ |  |  |
+| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `headline` | Headline | Data |  | ✓ |  |  | ✓ |  |  |
+| `governorate` | Governorate | Select | القاهرة, الجيزة, الإسكندرية, الشرقية, الدقهلية | ✓ |  |  | ✓ |  |  |
+| `area` | Area / District | Data |  |  |  |  |  |  |  |
+| `experience_years` | Years of Experience | Int |  | ✓ |  |  | ✓ |  |  |
+| _Profile_ (Section Break) | | | | | | | | | |
+| `avatar` | Avatar | Attach Image |  |  |  |  |  |  |  |
+| `bio` | Bio | Text Editor |  | ✓ |  |  |  |  |  |
+| `specialties` | Specialties | Table | Marketplace Tag |  |  |  |  |  |  |
+| `qualifications` | Qualifications | Table | Marketplace Qualification |  |  |  |  |  |  |
+| _Case Study (optional)_ (Section Break) | | | | | | | | | |
+| `case_study_title` | Case Study Title | Data |  |  |  |  |  |  |  |
+| `case_study_text` | Case Study Text | Small Text |  |  |  |  |  |  |  |
+| _Marketplace Roles_ (Section Break) | | | | | | | | | |
+| `offers_services` | Offers Services | Check |  |  |  | 1 |  |  |  |
+| `accepts_projects` | Accepts Projects | Check |  |  |  | 0 |  |  |  |
+| _Status_ (Section Break) | | | | | | | | | |
+| `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Pending | ✓ |  | 1 |
+| `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |  |
+| `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
-| Role | Read | Write | Create | Delete | If owner |
-|---|---|---|---|---|---|
-| System Manager | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Guest | ✓ |  |  |  |  |
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ | ✓ | ✓ |  |  |
+| Guest | 0 | ✓ |  |  |  |  |
+| System Manager | 1 | ✓ | ✓ |  |  |  |
+| Marketplace Moderator | 1 | ✓ | ✓ |  |  |  |
 
 ## Marketplace Project
 
@@ -124,34 +126,36 @@ A freelance project posted by a client, shown by card-project.php, project-detai
 - **Title field:** `title`
 - **Track changes:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `title` | Title | Data |  | ✓ |  |  | ✓ |  |
-| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |
-| `category` | Category | Link | Marketplace Category | ✓ |  |  | ✓ |  |
-| `client` | Client | Link | User | ✓ |  |  |  |  |
-| `client_display_name` | Client Display Name | Data |  | ✓ |  |  |  |  |
-| `client_type` | Client Type | Select | شركة ناشئة, منشأة صغيرة, شركة متوسطة, شركة قيد التأسيس, مجموعة شركات, منظمة غير ربحية | ✓ |  |  | ✓ |  |
-| _Brief_ (Section Break) | | | | | | | | |
-| `description` | Description | Text Editor |  | ✓ |  |  |  |  |
-| `required_skills` | Required Skills | Table | Marketplace Tag |  |  |  |  |  |
-| _Budget & Deadline_ (Section Break) | | | | | | | | |
-| `budget_min` | Budget Min | Currency |  | ✓ |  |  | ✓ |  |
-| `budget_max` | Budget Max | Currency |  | ✓ |  |  | ✓ |  |
-| `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |
-| `deadline` | Deadline | Date |  | ✓ |  |  | ✓ |  |
-| `escrow` | Escrow Protected | Check |  |  |  | 1 |  |  |
-| _Status_ (Section Break) | | | | | | | | |
-| `publication_status` | Publication Status | Select | Draft, Published, Closed, Archived |  |  | Draft | ✓ |  |
-| `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
+| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `category` | Category | Link | Marketplace Category | ✓ |  |  | ✓ |  |  |
+| `client` | Client | Link | User | ✓ |  |  |  |  | 1 |
+| `client_display_name` | Client Display Name | Data |  | ✓ |  |  |  |  |  |
+| `client_type` | Client Type | Select | شركة ناشئة, منشأة صغيرة, شركة متوسطة, شركة قيد التأسيس, مجموعة شركات, منظمة غير ربحية | ✓ |  |  | ✓ |  |  |
+| _Brief_ (Section Break) | | | | | | | | | |
+| `description` | Description | Text Editor |  | ✓ |  |  |  |  |  |
+| `required_skills` | Required Skills | Table | Marketplace Tag |  |  |  |  |  |  |
+| _Budget & Deadline_ (Section Break) | | | | | | | | | |
+| `budget_min` | Budget Min | Currency |  | ✓ |  |  | ✓ |  |  |
+| `budget_max` | Budget Max | Currency |  | ✓ |  |  | ✓ |  |  |
+| `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |  |
+| `deadline` | Deadline | Date |  | ✓ |  |  | ✓ |  |  |
+| `escrow` | Escrow Protected | Check |  |  |  | 1 |  |  |  |
+| _Status_ (Section Break) | | | | | | | | | |
+| `publication_status` | Publication Status | Select | Draft, Published, Closed, Archived |  |  | Draft | ✓ |  |  |
+| `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
-| Role | Read | Write | Create | Delete | If owner |
-|---|---|---|---|---|---|
-| System Manager | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Guest | ✓ |  |  |  |  |
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
+| Guest | 0 | ✓ |  |  |  |  |
+| System Manager | 1 | ✓ | ✓ |  |  |  |
+| Marketplace Moderator | 1 | ✓ | ✓ |  |  |  |
 
 ## Marketplace Proposal
 
@@ -161,26 +165,26 @@ ASSUMPTION / NOT YET IN THE WORDPRESS UI: project-detail.php's 'تقديم عر�
 - **Naming:** `hash`
 - **Track changes:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `project` | Project | Link | Marketplace Project | ✓ |  |  | ✓ |  |
-| `freelancer` | Freelancer | Link | Marketplace Profile | ✓ |  |  | ✓ |  |
-| `submitted_by` | Submitted By | Link | User | ✓ |  |  |  | ✓ |
-| `proposed_amount` | Proposed Amount | Currency |  | ✓ |  |  | ✓ |  |
-| `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |
-| `estimated_days` | Estimated Days | Int |  |  |  |  |  |  |
-| _Cover Letter_ (Section Break) | | | | | | | | |
-| `cover_letter` | Cover Letter | Text Editor |  | ✓ |  |  |  |  |
-| _Status_ (Section Break) | | | | | | | | |
-| `status` | Status | Select | Submitted, Shortlisted, Accepted, Rejected, Withdrawn |  |  | Submitted | ✓ |  |
-| `submitted_at` | Submitted At | Datetime |  |  |  |  |  | ✓ |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `project` | Project | Link | Marketplace Project | ✓ |  |  | ✓ |  |  |
+| `freelancer` | Freelancer | Link | Marketplace Profile | ✓ |  |  | ✓ |  |  |
+| `submitted_by` | Submitted By | Link | User | ✓ |  |  |  | ✓ |  |
+| `proposed_amount` | Proposed Amount | Currency |  | ✓ |  |  | ✓ |  |  |
+| `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |  |
+| `estimated_days` | Estimated Days | Int |  |  |  |  |  |  |  |
+| _Cover Letter_ (Section Break) | | | | | | | | | |
+| `cover_letter` | Cover Letter | Text Editor |  | ✓ |  |  |  |  |  |
+| _Status_ (Section Break) | | | | | | | | | |
+| `status` | Status | Select | Submitted, Shortlisted, Accepted, Rejected, Withdrawn |  |  | Submitted | ✓ |  |  |
+| `submitted_at` | Submitted At | Datetime |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
-| Role | Read | Write | Create | Delete | If owner |
-|---|---|---|---|---|---|
-| System Manager | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | ✓ |  |  |  |  |
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
 
 ## Marketplace Qualification
 
@@ -189,11 +193,11 @@ Child table backing Marketplace Profile.qualifications. Mirrors the 'title'/'iss
 - **Module:** `Marketplace`
 - **Child table:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `title` | Title | Data |  | ✓ |  |  | ✓ |  |
-| `issuer` | Issuer | Data |  | ✓ |  |  | ✓ |  |
-| `year` | Year | Data |  |  |  |  | ✓ |  |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
+| `issuer` | Issuer | Data |  | ✓ |  |  | ✓ |  |  |
+| `year` | Year | Data |  |  |  |  | ✓ |  |  |
 
 ## Marketplace Service
 
@@ -204,31 +208,31 @@ A fixed-price service package published by a provider, shown by card-service.php
 - **Title field:** `title`
 - **Track changes:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `title` | Title | Data |  | ✓ |  |  | ✓ |  |
-| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |
-| `provider` | Provider | Link | Marketplace Profile | ✓ |  |  | ✓ |  |
-| `category` | Category | Link | Marketplace Category | ✓ |  |  | ✓ |  |
-| `price` | Price | Currency |  | ✓ |  |  | ✓ |  |
-| `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |
-| `price_unit` | Price Unit | Select | Total, Monthly, Per Session | ✓ |  | Total |  |  |
-| _Content_ (Section Break) | | | | | | | | |
-| `thumbnail` | Thumbnail | Attach Image |  | ✓ |  |  |  |  |
-| `description` | Description | Text Editor |  | ✓ |  |  |  |  |
-| `badges` | Badges | Table | Marketplace Tag |  |  |  |  |  |
-| `features` | Features | Table | Marketplace Tag |  |  |  |  |  |
-| _Status_ (Section Break) | | | | | | | | |
-| `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |
-| `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
+| `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `provider` | Provider | Link | Marketplace Profile | ✓ |  |  | ✓ |  |  |
+| `category` | Category | Link | Marketplace Category | ✓ |  |  | ✓ |  |  |
+| `price` | Price | Currency |  | ✓ |  |  | ✓ |  |  |
+| `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |  |
+| `price_unit` | Price Unit | Select | Total, Monthly, Per Session | ✓ |  | Total |  |  |  |
+| _Content_ (Section Break) | | | | | | | | | |
+| `thumbnail` | Thumbnail | Attach Image |  | ✓ |  |  |  |  |  |
+| `description` | Description | Text Editor |  | ✓ |  |  |  |  |  |
+| `badges` | Badges | Table | Marketplace Tag |  |  |  |  |  |  |
+| `features` | Features | Table | Marketplace Tag |  |  |  |  |  |  |
+| _Status_ (Section Break) | | | | | | | | | |
+| `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |  |
+| `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
-| Role | Read | Write | Create | Delete | If owner |
-|---|---|---|---|---|---|
-| System Manager | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | ✓ | ✓ |  |  |  |
-| Guest | ✓ |  |  |  |  |
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
+| Guest | 0 | ✓ |  |  |  |  |
 
 ## Marketplace Tag
 
@@ -237,6 +241,6 @@ Generic free-text label row, reused as the child table behind Marketplace Profil
 - **Module:** `Marketplace`
 - **Child table:** `Yes`
 
-| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |
-|---|---|---|---|---|---|---|---|---|
-| `label` | Label | Data |  | ✓ |  |  | ✓ |  |
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `label` | Label | Data |  | ✓ |  |  | ✓ |  |  |

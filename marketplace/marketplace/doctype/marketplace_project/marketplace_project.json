@@ -48,7 +48,8 @@
       "label": "Client",
       "reqd": 1,
       "in_standard_filter": 1,
-      "description": "Linked to User directly, not to Marketplace Profile — a project poster is a client/business, not necessarily a listed service provider. Avoids inventing a second client-account entity."
+      "description": "Linked to User directly, not to Marketplace Profile — a project poster is a client/business, not necessarily a listed service provider. Avoids inventing a second client-account entity. Public pages show client_display_name instead. Permlevel 1: hidden from Guest (public /api/resource reads); only System Manager and Marketplace Moderator see it.",
+      "permlevel": 1
     },
     {
       "fieldname": "client_display_name",
@@ -172,6 +173,18 @@
       "write": 0,
       "create": 0,
       "delete": 0
+    },
+    {
+      "role": "System Manager",
+      "permlevel": 1,
+      "read": 1,
+      "write": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "permlevel": 1,
+      "read": 1,
+      "write": 1
     }
   ]
 }

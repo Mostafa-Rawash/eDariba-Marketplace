@@ -51,26 +51,27 @@ def render(doc: dict) -> list[str]:
 		out.append(f"- **Sort:** `{doc['sort_field']} {doc.get('sort_order', 'DESC')}`")
 	out += [
 		"",
-		"| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only |",
-		"|---|---|---|---|---|---|---|---|---|",
+		"| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |",
+		"|---|---|---|---|---|---|---|---|---|---|",
 	]
 	for f in doc.get("fields", []):
 		if f["fieldtype"] == "Column Break":
 			continue
 		if f["fieldtype"] in BREAKS:
-			out.append(f"| _{f.get('label') or f['fieldname']}_ ({f['fieldtype']}) | | | | | | | | |")
+			out.append(f"| _{f.get('label') or f['fieldname']}_ ({f['fieldtype']}) | | | | | | | | | |")
 			continue
 		options = ", ".join(o for o in (f.get("options") or "").split("\n") if o)
 		out.append(
 			f"| `{f['fieldname']}` | {f.get('label', '')} | {f['fieldtype']} | {options} | {tick(f.get('reqd'))} "
-			f"| {tick(f.get('unique'))} | {f.get('default', '')} | {tick(f.get('in_list_view'))} | {tick(f.get('read_only'))} |"
+			f"| {tick(f.get('unique'))} | {f.get('default', '')} | {tick(f.get('in_list_view'))} | {tick(f.get('read_only'))} "
+			f"| {f.get('permlevel') or ''} |"
 		)
 	perms = doc.get("permissions") or []
 	if perms:
-		out += ["", "**Permissions**", "", "| Role | Read | Write | Create | Delete | If owner |", "|---|---|---|---|---|---|"]
+		out += ["", "**Permissions**", "", "| Role | Level | Read | Write | Create | Delete | If owner |", "|---|---|---|---|---|---|---|"]
 		for p in perms:
 			out.append(
-				f"| {p['role']} | {tick(p.get('read'))} | {tick(p.get('write'))} | {tick(p.get('create'))} "
+				f"| {p['role']} | {p.get('permlevel') or 0} | {tick(p.get('read'))} | {tick(p.get('write'))} | {tick(p.get('create'))} "
 				f"| {tick(p.get('delete'))} | {tick(p.get('if_owner'))} |"
 			)
 	out.append("")
