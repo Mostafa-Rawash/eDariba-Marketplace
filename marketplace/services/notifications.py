@@ -1,7 +1,13 @@
 """Request emails. Queued through frappe.sendmail (Email Queue), so a save
 never waits on, or fails because of, the mail server.
 
-Emails carry only the requester's display name and a link into the app
+Who is emailed: a new request goes to the accountant. After that, every
+change goes to the other side from the person who made it: the provider's
+reply, reply edits, accept/decline/close go to the requester; the
+requester's cancel/close goes to the provider. Nobody is emailed about their
+own change.
+
+Emails carry only a display name and a link into the app
 (app.edariba.com/marketplace/requests/<id>); the details are shown after
 login, never in the email body.
 """
@@ -9,6 +15,9 @@ login, never in the email body.
 import frappe
 
 DEFAULT_APP_URL = "https://app.edariba.com"
+
+# Event names passed to templates/emails/marketplace_request_update.html.
+REPLY_UPDATED = "ReplyUpdated"
 
 
 def request_url(name: str) -> str:
@@ -34,10 +43,16 @@ def _send(recipient: str | None, subject: str, template: str, args: dict, doc) -
 		frappe.log_error(title="Marketplace request email failed", message=frappe.get_traceback())
 
 
+def _provider(doc) -> tuple[str | None, str | None]:
+	"""(email, display name) of the accountant who received the request."""
+	profile = frappe.db.get_value("Marketplace Profile", doc.recipient, ["user", "display_name"], as_dict=True) or {}
+	email = frappe.db.get_value("User", profile.get("user"), "email") if profile.get("user") else None
+	return email, profile.get("display_name")
+
+
 def notify_new_request(doc) -> None:
 	"""To the accountant who received the request."""
-	provider_user = frappe.db.get_value("Marketplace Profile", doc.recipient, "user")
-	email = frappe.db.get_value("User", provider_user, "email") if provider_user else None
+	email, _name = _provider(doc)
 	_send(
 		email,
 		"طلب جديد على eDariba",
@@ -47,13 +62,18 @@ def notify_new_request(doc) -> None:
 	)
 
 
-def notify_status_change(doc) -> None:
-	"""To the requester, when the accountant responds or the status changes."""
-	provider_name = frappe.db.get_value("Marketplace Profile", doc.recipient, "display_name")
+def notify_update(doc, event: str, by_requester: bool) -> None:
+	"""`event` is the new status, or REPLY_UPDATED when only the reply text
+	changed. Goes to the side that did not make the change."""
+	provider_email, provider_name = _provider(doc)
+	if by_requester:
+		recipient, actor_name = provider_email, doc.requester_name
+	else:
+		recipient, actor_name = doc.requester_email, provider_name
 	_send(
-		doc.requester_email,
-		"تحديث على طلبك في eDariba",
+		recipient,
+		"تحديث على طلب في eDariba",
 		"marketplace_request_update",
-		{"provider_name": provider_name, "status": doc.status, "url": request_url(doc.name)},
+		{"actor_name": actor_name, "event": event, "url": request_url(doc.name)},
 		doc,
 	)

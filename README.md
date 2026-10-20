@@ -63,12 +63,16 @@ marketplace/
 | `submit_request(recipient, details, inquiry_type?, related_service?, phone?)` | client | Recipient must be Published, Verified, offering services, and not yourself; service must be theirs; one open request per accountant; 10 per hour per user. Emails the accountant. |
 | `list_requests(box="sent"\|"received", status?, page?)` | both | Requests you sent / requests to your profile |
 | `get_request(name)` | both | Detail, your `role`, `next_statuses`, `can_respond`. Non-parties get "not found". |
-| `respond_request(name, message)` | provider | Writes the reply, sets Responded, emails the client |
+| `respond_request(name, message)` | provider | Writes or edits the reply, sets Responded, emails the client each time |
 | `set_request_status(name, status)` | both | Per `services/request_rules.py` |
 
 Statuses: `New → Responded → Accepted → Closed`; the provider can Decline
 while New/Responded; the requester can Cancel while New/Responded; either
-side closes an Accepted request. Emails contain only a name and a link to
+side closes an Accepted request. Every change emails the other side (the
+requester's cancel/close goes to the provider; replies, reply edits and the
+provider's status changes go to the requester); nobody is emailed about
+their own change. Two submits by the same user are serialized by a row lock
+on their User record. Emails contain only a name and a link to
 `{marketplace_app_url}/marketplace/requests/<id>` (site_config key, default
 `https://app.edariba.com`).
 
@@ -124,7 +128,6 @@ a real database.
   `list/save_my_service`). Until then a moderator creates profiles in Desk.
 - The partner badge is shown but does not rank partners higher yet.
 - Project and Proposal have no app API yet; they are reachable only in Desk.
-- A status change made by the requester (Cancel, Close) sends no email.
 - `filters.category` from `auto_intent` is reported in `meta` but not applied
   as a Qdrant filter (the accountant payload has no category).
 - Search revalidates hits by slug (`search_service._PUBLIC_LOOKUP`); editing a

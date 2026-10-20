@@ -93,6 +93,10 @@ def submit_request(
 	phone: str | None = None,
 ):
 	user = _user()
+	# Lock the caller's User row for the rest of this request's transaction, so
+	# two simultaneous submits by the same user run one after the other and the
+	# duplicate and rate checks below cannot both pass before either insert.
+	frappe.db.get_value("User", user, "name", for_update=True)
 
 	profile = frappe.db.get_value(
 		"Marketplace Profile",
@@ -210,7 +214,8 @@ def get_request(name: str):
 @frappe.whitelist(methods=["POST"])
 def respond_request(name: str, message: str):
 	"""The provider's reply. Moves the request to Responded; may be sent again
-	to update the reply while the request is still New or Responded."""
+	to update the reply while the request is still New or Responded. The
+	requester is emailed each time (see MarketplaceInquiry.on_update)."""
 	doc, actor = _load_as_party(name)
 	if not request_rules.can_respond(actor, doc.status):
 		frappe.throw(_("You cannot respond to this request."), frappe.PermissionError)

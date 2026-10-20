@@ -27,8 +27,12 @@ class MarketplaceInquiry(Document):
 
 	def on_update(self):
 		# get_doc_before_save() is None on insert; after_insert covers that case.
-		if self.get_doc_before_save() is None or not self.has_value_changed("status"):
+		if self.get_doc_before_save() is None:
 			return
-		# The requester does not need an email about a change they made themselves.
-		if frappe.session.user != self.requester:
-			notifications.notify_status_change(self)
+		if self.has_value_changed("status"):
+			event = self.status
+		elif self.has_value_changed("response"):
+			event = notifications.REPLY_UPDATED
+		else:
+			return
+		notifications.notify_update(self, event, by_requester=frappe.session.user == self.requester)

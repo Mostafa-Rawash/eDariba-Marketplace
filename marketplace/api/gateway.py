@@ -18,6 +18,8 @@ decides what code can run, so a client can never request an arbitrary
 Frappe method by name.
 """
 
+import inspect
+
 import frappe
 
 from marketplace.api.public import accountants, metadata, projects, search, services
@@ -41,8 +43,29 @@ def request(resource: str, action: str, params: dict | None = None):
 	if handler is None:
 		frappe.throw(f"Unknown resource/action: {resource}/{action}", frappe.ValidationError)
 
-	params = params or {}
+	params = frappe.parse_json(params) if isinstance(params, str) else (params or {})
 	if not isinstance(params, dict):
 		frappe.throw("params must be an object.")
+	_check_params(handler, params, f"{resource}/{action}")
 
 	return handler(**params)
+
+
+def _check_params(handler, params: dict, label: str) -> None:
+	"""Turn a bad `params` into a clear 417 validation error instead of the
+	TypeError (500) that calling the handler with it would raise."""
+	signature = inspect.signature(handler)
+	allowed = set(signature.parameters)
+	unknown = sorted(set(params) - allowed)
+	if unknown:
+		frappe.throw(
+			f"Unknown params for {label}: {', '.join(unknown)}. Allowed: {', '.join(sorted(allowed))}.",
+			frappe.ValidationError,
+		)
+	missing = sorted(
+		name
+		for name, p in signature.parameters.items()
+		if p.default is inspect.Parameter.empty and name not in params
+	)
+	if missing:
+		frappe.throw(f"Missing params for {label}: {', '.join(missing)}.", frappe.ValidationError)

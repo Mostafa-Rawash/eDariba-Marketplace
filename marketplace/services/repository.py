@@ -53,11 +53,17 @@ def _paginate(
 
 
 def text_search(q: str, fieldnames: list[str]) -> dict | None:
-	"""or_filters matching `q` as a substring of any of `fieldnames`."""
+	"""or_filters matching `q` as a literal substring of any of `fieldnames`.
+	Backslash, % and _ are escaped so they match themselves instead of acting
+	as LIKE wildcards (MariaDB's default LIKE escape character is backslash)."""
 	q = (q or "").strip()
 	if not q:
 		return None
-	return {f: ["like", f"%{q}%"] for f in fieldnames}
+	return {f: ["like", f"%{like_literal(q)}%"] for f in fieldnames}
+
+
+def like_literal(text: str) -> str:
+	return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def _attach_partner_badge(rows: list) -> None:
