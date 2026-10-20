@@ -1,6 +1,6 @@
 # eDariba Marketplace — Integration Audit & UI Placement Recommendation
 
-> **Status update (2026-10-20).** This report is a point-in-time audit. Module paths below were updated to the new layout (`api/public/`, `api/gateway.py`, flat `services/`); references to `eDariba-Marketplace/edariba_marketplace/` mean the repo root now. Decisions taken since:
+> **Status update (2026-10-20).** This report is a point-in-time audit. Module paths below were updated to the new layout (`api/public/`, `api/gateway.py`, flat `services/`); references to `eDariba-Marketplace/edariba_marketplace/` mean the repo root now. **The app was renamed `edariba_marketplace` → `marketplace` on 2026-10-20**: read `edariba_marketplace` below as `marketplace` (except the legacy Qdrant collection of that name). Decisions taken since:
 > - **J1** yes: install on server.edariba.com beside `accounting`. No `accounting` code changes.
 > - **J2** no exemption: everyone goes through ETA onboarding.
 > - **J3** login required. Guest inquiry endpoint and Guest create DocPerm removed (fixes **S1**).

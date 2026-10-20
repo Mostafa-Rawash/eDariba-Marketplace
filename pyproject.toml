@@ -1,5 +1,5 @@
 [project]
-name = "edariba_marketplace"
+name = "marketplace"
 authors = [
     { name = "eDariba", email = "dev@edariba.com" }
 ]

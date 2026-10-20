@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "eDariba Marketplace API",
-    "description": "Marketplace endpoints in edariba_marketplace/api/. Set {{base_url}} to the site root, e.g. https://server.edariba.com. Public (Guest, read-only): Accountants/Services/Projects/Metadata/Search, and the Gateway that WordPress calls. Workspace (logged in): request flow used by app.edariba.com; log in first (the 'Login' request stores the sid cookie in Postman's cookie jar). Search needs EMBEDDING_API_KEY set in the server's site_config.json (never commit it).",
+    "description": "Marketplace endpoints in marketplace/api/. Set {{base_url}} to the site root, e.g. https://server.edariba.com. Public (Guest, read-only): Accountants/Services/Projects/Metadata/Search, and the Gateway that WordPress calls. Workspace (logged in): request flow used by app.edariba.com; log in first (the 'Login' request stores the sid cookie in Postman's cookie jar). Search needs EMBEDDING_API_KEY set in the server's site_config.json (never commit it).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -31,14 +31,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.accountants.list_accountants?page=1&page_size=20&sort_by=experience_years&sort_order=desc",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.accountants.list_accountants?page=1&page_size=20&sort_by=experience_years&sort_order=desc",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.accountants.list_accountants"
+                "marketplace.api.public.accountants.list_accountants"
               ],
               "query": [
                 {
@@ -81,14 +81,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.accountants.get_accountant?slug={{accountant_slug}}",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.accountants.get_accountant?slug={{accountant_slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.accountants.get_accountant"
+                "marketplace.api.public.accountants.get_accountant"
               ],
               "query": [
                 {
@@ -104,14 +104,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.accountants.get_accountant?slug=does-not-exist",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.accountants.get_accountant?slug=does-not-exist",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.accountants.get_accountant"
+                "marketplace.api.public.accountants.get_accountant"
               ],
               "query": [
                 {
@@ -132,14 +132,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.services.list_services?page=1&page_size=20&sort_by=price&sort_order=asc",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.services.list_services?page=1&page_size=20&sort_by=price&sort_order=asc",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.services.list_services"
+                "marketplace.api.public.services.list_services"
               ],
               "query": [
                 {
@@ -182,14 +182,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.services.get_service?slug={{service_slug}}",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.services.get_service?slug={{service_slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.services.get_service"
+                "marketplace.api.public.services.get_service"
               ],
               "query": [
                 {
@@ -210,14 +210,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.projects.list_projects?page=1&page_size=20&sort_by=deadline&sort_order=asc",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.projects.list_projects?page=1&page_size=20&sort_by=deadline&sort_order=asc",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.projects.list_projects"
+                "marketplace.api.public.projects.list_projects"
               ],
               "query": [
                 {
@@ -265,14 +265,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.projects.get_project?slug={{project_slug}}",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.projects.get_project?slug={{project_slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.projects.get_project"
+                "marketplace.api.public.projects.get_project"
               ],
               "query": [
                 {
@@ -293,14 +293,14 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.metadata.get_metadata",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.metadata.get_metadata",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.metadata.get_metadata"
+                "marketplace.api.public.metadata.get_metadata"
               ]
             }
           }
@@ -321,14 +321,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.search.search",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.search.search",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.search.search"
+                "marketplace.api.public.search.search"
               ]
             },
             "body": {
@@ -348,14 +348,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.public.search.search",
+              "raw": "{{base_url}}/api/method/marketplace.api.public.search.search",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.public.search.search"
+                "marketplace.api.public.search.search"
               ]
             },
             "body": {
@@ -380,14 +380,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -407,14 +407,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -434,14 +434,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -461,14 +461,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -488,14 +488,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -515,14 +515,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -542,14 +542,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.gateway.request",
+              "raw": "{{base_url}}/api/method/marketplace.api.gateway.request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.gateway.request"
+                "marketplace.api.gateway.request"
               ]
             },
             "body": {
@@ -601,14 +601,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.workspace.submit_request",
+              "raw": "{{base_url}}/api/method/marketplace.api.workspace.submit_request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.workspace.submit_request"
+                "marketplace.api.workspace.submit_request"
               ]
             },
             "body": {
@@ -628,14 +628,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.workspace.list_requests",
+              "raw": "{{base_url}}/api/method/marketplace.api.workspace.list_requests",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.workspace.list_requests"
+                "marketplace.api.workspace.list_requests"
               ]
             },
             "body": {
@@ -655,14 +655,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.workspace.list_requests",
+              "raw": "{{base_url}}/api/method/marketplace.api.workspace.list_requests",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.workspace.list_requests"
+                "marketplace.api.workspace.list_requests"
               ]
             },
             "body": {
@@ -682,14 +682,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.workspace.get_request",
+              "raw": "{{base_url}}/api/method/marketplace.api.workspace.get_request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.workspace.get_request"
+                "marketplace.api.workspace.get_request"
               ]
             },
             "body": {
@@ -709,14 +709,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.workspace.respond_request",
+              "raw": "{{base_url}}/api/method/marketplace.api.workspace.respond_request",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.workspace.respond_request"
+                "marketplace.api.workspace.respond_request"
               ]
             },
             "body": {
@@ -736,14 +736,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.api.workspace.set_request_status",
+              "raw": "{{base_url}}/api/method/marketplace.api.workspace.set_request_status",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.api.workspace.set_request_status"
+                "marketplace.api.workspace.set_request_status"
               ]
             },
             "body": {
@@ -795,14 +795,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/edariba_marketplace.services.indexing_service.reconcile",
+              "raw": "{{base_url}}/api/method/marketplace.services.indexing_service.reconcile",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "edariba_marketplace.services.indexing_service.reconcile"
+                "marketplace.services.indexing_service.reconcile"
               ]
             },
             "body": {

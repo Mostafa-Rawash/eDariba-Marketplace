@@ -1,6 +1,6 @@
 # Marketplace DocTypes
 
-Generated from the DocType JSON definitions in `edariba_marketplace/marketplace/doctype/` by `scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.
+Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/` by `scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.
 
 8 DocTypes.
 
@@ -41,7 +41,7 @@ Shared category taxonomy used to filter accountants, services, and projects. One
 
 ## Marketplace Inquiry
 
-A request from a logged-in client to one accountant (Marketplace Profile). Created only through edariba_marketplace.api.workspace.submit_request; users have no DocPerm on it. Fully private.
+A request from a logged-in client to one accountant (Marketplace Profile). Created only through marketplace.api.workspace.submit_request; users have no DocPerm on it. Fully private.
 
 - **Module:** `Marketplace`
 - **Naming:** `hash`

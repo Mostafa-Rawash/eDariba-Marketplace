@@ -1,4 +1,4 @@
-# edariba_marketplace (Frappe app)
+# marketplace (Frappe app)
 
 Accountant directory, services marketplace, and client → accountant requests
 for eDariba. Installed beside `accounting` on the same Frappe site
@@ -15,7 +15,7 @@ theme templates (`plugins/edariba-marketplace/includes/class-dummy-data-provider
 pyproject.toml            packaging (bench get-app / pip install -e)
 docs/                     INTEGRATION_AUDIT.md, DOCTYPES.md, STITCH_UI_PROMPTS.md
 postman/                  every endpoint with example requests
-edariba_marketplace/
+marketplace/
   hooks.py  patches.txt  modules.txt
   fixtures/role.json      the Marketplace Moderator role
   marketplace/doctype/    8 DocTypes: Profile, Service, Project, Proposal,
@@ -103,7 +103,7 @@ A "unified" search across multiple entity types is a fan-out — one Qdrant
   (`400 not a valid point ID`); `indexing_service._point_id` now uses a
   deterministic `uuid5(doctype:name)`.
 - Unit tests that need no Frappe (run from the repo root):
-  `python -m unittest edariba_marketplace.services.tests.test_intent_router edariba_marketplace.services.tests.test_request_rules`
+  `python -m unittest marketplace.services.tests.test_intent_router marketplace.services.tests.test_request_rules`
 
 ## Not verified (no bench here)
 
@@ -146,25 +146,25 @@ docker exec edariba-backend-1 bench --site server.edariba.com backup
 cp ~/gitops/frappe-v16.yml ~/gitops/frappe-v16.yml.bak-$(date +%Y%m%d)
 
 # 1. Code (the folder name must equal the app name)
-git clone -b <branch> https://github.com/Mostafa-Rawash/eDariba-Marketplace ~/edariba-apps/edariba_marketplace
+git clone -b <branch> https://github.com/Mostafa-Rawash/eDariba-Marketplace ~/edariba-apps/marketplace
 
 # 2. Mount it into the same 7 services that mount accounting
 #    (backend, configurator, frontend, queue-long, queue-short, scheduler, websocket):
 #      - type: bind
-#        source: /home/ubuntu/edariba-apps/edariba_marketplace
-#        target: /home/frappe/frappe-bench/apps/edariba_marketplace
+#        source: /home/ubuntu/edariba-apps/marketplace
+#        target: /home/frappe/frappe-bench/apps/marketplace
 nano ~/gitops/frappe-v16.yml
 docker compose --project-name edariba -f ~/gitops/frappe-v16.yml up -d
 
 # 3. Install the Python package once, then freeze it into a new image tag
-docker exec edariba-backend-1 /home/frappe/frappe-bench/env/bin/pip install -e /home/frappe/frappe-bench/apps/edariba_marketplace
+docker exec edariba-backend-1 /home/frappe/frappe-bench/env/bin/pip install -e /home/frappe/frappe-bench/apps/marketplace
 docker commit edariba-backend-1 frappe:16-accounting-890d5fc-r3
 #    In frappe-v16.yml replace every image frappe:16-accounting-890d5fc-r2 with -r3, then:
 docker compose --project-name edariba -f ~/gitops/frappe-v16.yml up -d
 
 # 4. Register and install on the site
-docker exec edariba-backend-1 bash -c 'cd /home/frappe/frappe-bench && grep -qx edariba_marketplace sites/apps.txt || echo edariba_marketplace >> sites/apps.txt'
-docker exec edariba-backend-1 bench --site server.edariba.com install-app edariba_marketplace
+docker exec edariba-backend-1 bash -c 'cd /home/frappe/frappe-bench && grep -qx marketplace sites/apps.txt || echo marketplace >> sites/apps.txt'
+docker exec edariba-backend-1 bench --site server.edariba.com install-app marketplace
 docker exec edariba-backend-1 bench --site server.edariba.com migrate
 
 # 5. Config (values from the team password store, never from git)
@@ -180,20 +180,20 @@ docker restart edariba-backend-1 edariba-frontend-1 edariba-websocket-1 edariba-
 Then give staff the **Marketplace Moderator** role in Desk.
 
 **Check after deploy**
-- `GET https://server.edariba.com/api/method/edariba_marketplace.api.public.metadata.get_metadata` → `success: true`.
+- `GET https://server.edariba.com/api/method/marketplace.api.public.metadata.get_metadata` → `success: true`.
 - As a guest, `POST /api/resource/Marketplace Inquiry` → 403.
 - Logged in: `workspace.list_requests` → empty list, not an error.
 
-**Later updates**: `cd ~/edariba-apps/edariba_marketplace && git pull`, then
+**Later updates**: `cd ~/edariba-apps/marketplace && git pull`, then
 `migrate` and the restart in step 6.
 
 **Rollback** (order matters: the site breaks if the code disappears while the
 app is still installed): first
-`bench --site server.edariba.com uninstall-app edariba_marketplace --yes`
-(drops the marketplace tables), then remove `edariba_marketplace` from
+`bench --site server.edariba.com uninstall-app marketplace --yes`
+(drops the marketplace tables), then remove `marketplace` from
 `sites/apps.txt`, then put back the compose backup (r2 image, no mount) and
 `up -d`. The step 0 database backup is the fallback if uninstall fails.
 
 **WordPress**: the gateway URL is now
-`/api/method/edariba_marketplace.api.gateway.request`; update
+`/api/method/marketplace.api.gateway.request`; update
 `class-frappe-client.php` and set `EDARIBA_FRAPPE_API_URL` in wp-config.php.
