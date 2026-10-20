@@ -24,7 +24,7 @@ from typing import Any
 import frappe
 import requests
 
-from edariba_marketplace.services.marketplace.config import (
+from edariba_marketplace.services.config import (
 	embedding_api_key,
 	embedding_api_url,
 	http_timeout_seconds,

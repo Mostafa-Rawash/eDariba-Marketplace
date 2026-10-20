@@ -20,9 +20,9 @@ template, not invented.
 
 - `edariba_marketplace/marketplace/doctype/*` — 8 DocTypes: Profile, Service,
   Project, Proposal, Inquiry, Category, Tag (child), Qualification (child).
-- `edariba_marketplace/api/marketplace/*` — public REST endpoints (list/get
+- `edariba_marketplace/api/public/*` — public REST endpoints (list/get
   for accountants/services/projects, metadata, unified search, chat).
-- `edariba_marketplace/services/marketplace/*` — repository/serializer/filter
+- `edariba_marketplace/services/*` — repository/serializer/filter
   layer, Qdrant client, embedding client, indexing pipeline, deterministic
   intent router (ported from `class-chat-router.php`, not re-derived).
 - `postman/eDariba-Marketplace.postman_collection.json` — every endpoint with
@@ -40,7 +40,7 @@ now). Switched to a dedicated collection per type on explicit instruction:
 | service | `services` | Created fresh (1024-dim, Cosine) — did not exist before. |
 | project | `projects` | Created fresh (1024-dim, Cosine) — did not exist before. |
 
-Config: `services/marketplace/config.py:qdrant_collection_for(entity_type)`,
+Config: `services/config.py:qdrant_collection_for(entity_type)`,
 overridable via `QDRANT_COLLECTION_ACCOUNTANTS` / `_SERVICES` / `_PROJECTS`.
 
 A "unified" search across multiple entity types is a fan-out — one Qdrant
@@ -58,7 +58,7 @@ A "unified" search across multiple entity types is a fan-out — one Qdrant
 - Caught and fixed a real bug this way: Qdrant rejects string point IDs
   (`400 not a valid point ID`); `indexing_service._point_id` now uses a
   deterministic `uuid5(doctype:name)`.
-- `services/marketplace/intent_router.py`: 5/5 unit tests actually executed
+- `services/intent_router.py`: 5/5 unit tests actually executed
   (`python3 -m unittest ...tests.test_intent_router`), no Frappe needed.
 
 ## Not verified (no bench here)

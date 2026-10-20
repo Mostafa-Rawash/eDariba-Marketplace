@@ -31,19 +31,19 @@ has_permission = {
 
 doc_events = {
 	"Marketplace Category": {
-		"on_update": "edariba_marketplace.api.marketplace.metadata.clear_cache",
-		"on_trash": "edariba_marketplace.api.marketplace.metadata.clear_cache",
+		"on_update": "edariba_marketplace.api.public.metadata.clear_cache",
+		"on_trash": "edariba_marketplace.api.public.metadata.clear_cache",
 	},
 	"Marketplace Profile": {
-		"on_update": "edariba_marketplace.services.marketplace.indexing_service.on_profile_update",
-		"on_trash": "edariba_marketplace.services.marketplace.indexing_service.on_profile_delete",
+		"on_update": "edariba_marketplace.services.indexing_service.on_profile_update",
+		"on_trash": "edariba_marketplace.services.indexing_service.on_profile_delete",
 	},
 	"Marketplace Service": {
-		"on_update": "edariba_marketplace.services.marketplace.indexing_service.on_service_update",
-		"on_trash": "edariba_marketplace.services.marketplace.indexing_service.on_service_delete",
+		"on_update": "edariba_marketplace.services.indexing_service.on_service_update",
+		"on_trash": "edariba_marketplace.services.indexing_service.on_service_delete",
 	},
 	"Marketplace Project": {
-		"on_update": "edariba_marketplace.services.marketplace.indexing_service.on_project_update",
-		"on_trash": "edariba_marketplace.services.marketplace.indexing_service.on_project_delete",
+		"on_update": "edariba_marketplace.services.indexing_service.on_project_update",
+		"on_trash": "edariba_marketplace.services.indexing_service.on_project_delete",
 	},
 }

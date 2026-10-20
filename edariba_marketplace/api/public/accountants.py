@@ -1,15 +1,15 @@
 """Public accountant-directory endpoints.
 
 Routes (once this app is installed on the real site):
-  GET /api/method/edariba_marketplace.api.marketplace.accountants.list_accountants
-  GET /api/method/edariba_marketplace.api.marketplace.accountants.get_accountant
+  GET /api/method/edariba_marketplace.api.public.accountants.list_accountants
+  GET /api/method/edariba_marketplace.api.public.accountants.get_accountant
 """
 
 import frappe
 
-from edariba_marketplace.api.marketplace.common import ok
-from edariba_marketplace.services.marketplace import repository
-from edariba_marketplace.services.marketplace.filters import (
+from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.services import repository
+from edariba_marketplace.services.filters import (
 	ACCOUNTANT_SORT_FIELDS,
 	clamp_page,
 	clamp_page_size,

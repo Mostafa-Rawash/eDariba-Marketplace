@@ -1,7 +1,7 @@
 """The one Guest-writable Marketplace endpoint.
 
 Route:
-  POST /api/method/edariba_marketplace.api.marketplace.inquiry.submit_inquiry
+  POST /api/method/edariba_marketplace.api.public.inquiry.submit_inquiry
 
 Wraps the real "استفسار مباشر وسري" form in accountant-profile.php's sidebar
 (currently a data-edariba-demo-form that submits nowhere) — once that form

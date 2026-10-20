@@ -1,15 +1,15 @@
 """Public freelance-projects endpoints.
 
 Routes:
-  GET /api/method/edariba_marketplace.api.marketplace.projects.list_projects
-  GET /api/method/edariba_marketplace.api.marketplace.projects.get_project
+  GET /api/method/edariba_marketplace.api.public.projects.list_projects
+  GET /api/method/edariba_marketplace.api.public.projects.get_project
 """
 
 import frappe
 
-from edariba_marketplace.api.marketplace.common import ok
-from edariba_marketplace.services.marketplace import repository
-from edariba_marketplace.services.marketplace.filters import (
+from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.services import repository
+from edariba_marketplace.services.filters import (
 	PROJECT_SORT_FIELDS,
 	clamp_page,
 	clamp_page_size,

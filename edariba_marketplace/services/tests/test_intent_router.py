@@ -1,6 +1,6 @@
 import unittest
 
-from edariba_marketplace.services.marketplace.intent_router import classify
+from edariba_marketplace.services.intent_router import classify
 
 
 class TestIntentRouter(unittest.TestCase):

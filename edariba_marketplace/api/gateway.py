@@ -2,13 +2,13 @@
 one URL instead of nine separate whitelisted methods.
 
 Route:
-  POST /api/method/edariba_marketplace.api.marketplace.gateway.request
+  POST /api/method/edariba_marketplace.api.gateway.request
   Body: {"resource": "accountant", "action": "list", "params": {...}}
 
 This does NOT duplicate business logic — every (resource, action) pair below
-is a direct call into the same functions already built in accountants.py /
-services.py / projects.py / metadata.py / search.py / chat.py /
-marketplace/api.py. The gateway is purely a router: it validates
+is a direct call into the same functions already built in api/public/
+(accountants.py / services.py / projects.py / metadata.py / search.py /
+chat.py / inquiry.py). The gateway is purely a router: it validates
 (resource, action) against an explicit allowlist, then forwards `params` as
 kwargs to the matching function. No dynamic attribute lookup from
 client-supplied strings — the dispatch table below is the only thing that
@@ -18,7 +18,7 @@ Frappe method by name.
 
 import frappe
 
-from edariba_marketplace.api.marketplace import accountants, chat, inquiry, metadata, projects, search, services
+from edariba_marketplace.api.public import accountants, chat, inquiry, metadata, projects, search, services
 
 _DISPATCH = {
 	("accountant", "list"): accountants.list_accountants,

@@ -12,9 +12,9 @@ cross-collection query, so this is unavoidable, not a shortcut.
 
 import frappe
 
-from edariba_marketplace.services.marketplace import qdrant_client, repository
-from edariba_marketplace.services.marketplace.config import qdrant_collection_for
-from edariba_marketplace.services.marketplace.embedding_client import embed_text
+from edariba_marketplace.services import qdrant_client, repository
+from edariba_marketplace.services.config import qdrant_collection_for
+from edariba_marketplace.services.embedding_client import embed_text
 
 ENTITY_TYPES = {"accountant", "service", "project"}
 

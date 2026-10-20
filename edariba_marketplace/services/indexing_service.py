@@ -54,9 +54,9 @@ import uuid
 
 import frappe
 
-from edariba_marketplace.services.marketplace import qdrant_client
-from edariba_marketplace.services.marketplace.config import qdrant_collection_for
-from edariba_marketplace.services.marketplace.embedding_client import embed_text
+from edariba_marketplace.services import qdrant_client
+from edariba_marketplace.services.config import qdrant_collection_for
+from edariba_marketplace.services.embedding_client import embed_text
 
 SCHEMA_VERSION = 1
 QUEUE = "short"
@@ -169,7 +169,7 @@ def _sync(doctype: str, name: str, payload_fn, text_fn):
 
 def _enqueue(doctype: str, name: str, payload_fn_path: str, text_fn_path: str):
 	frappe.enqueue(
-		"edariba_marketplace.services.marketplace.indexing_service._sync_by_path",
+		"edariba_marketplace.services.indexing_service._sync_by_path",
 		queue=QUEUE,
 		doctype_name=doctype,
 		doc_name=name,
@@ -191,7 +191,7 @@ def _sync_by_path(doctype_name: str, doc_name: str, payload_fn_path: str, text_f
 
 def _delete_enqueue(doctype: str, name: str):
 	frappe.enqueue(
-		"edariba_marketplace.services.marketplace.indexing_service._delete_by_path",
+		"edariba_marketplace.services.indexing_service._delete_by_path",
 		queue=QUEUE,
 		doctype_name=doctype,
 		doc_name=name,
@@ -210,16 +210,16 @@ def _delete_by_path(doctype_name: str, doc_name: str):
 
 _PATHS = {
 	"Marketplace Profile": (
-		"edariba_marketplace.services.marketplace.indexing_service.build_profile_payload",
-		"edariba_marketplace.services.marketplace.indexing_service.build_profile_text",
+		"edariba_marketplace.services.indexing_service.build_profile_payload",
+		"edariba_marketplace.services.indexing_service.build_profile_text",
 	),
 	"Marketplace Service": (
-		"edariba_marketplace.services.marketplace.indexing_service.build_service_payload",
-		"edariba_marketplace.services.marketplace.indexing_service.build_service_text",
+		"edariba_marketplace.services.indexing_service.build_service_payload",
+		"edariba_marketplace.services.indexing_service.build_service_text",
 	),
 	"Marketplace Project": (
-		"edariba_marketplace.services.marketplace.indexing_service.build_project_payload",
-		"edariba_marketplace.services.marketplace.indexing_service.build_project_text",
+		"edariba_marketplace.services.indexing_service.build_project_payload",
+		"edariba_marketplace.services.indexing_service.build_project_text",
 	),
 }
 

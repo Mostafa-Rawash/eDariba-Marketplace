@@ -1,20 +1,20 @@
 """Chat discovery endpoint for the WordPress "AI assistant" input.
 
 Route:
-  POST /api/method/edariba_marketplace.api.marketplace.chat.discover
+  POST /api/method/edariba_marketplace.api.public.chat.discover
 
 Intent classification (which entity type(s) to search) is deterministic
-keyword matching — see services/marketplace/intent_router.py — not an LLM.
+keyword matching — see services/intent_router.py — not an LLM.
 Retrieval reuses the same semantic search as /search, so it is blocked by
 the same EmbeddingError until EMBEDDING_API_KEY is configured.
 """
 
 import frappe
 
-from edariba_marketplace.api.marketplace.common import ok
-from edariba_marketplace.services.marketplace.filters import clamp_page, clamp_page_size
-from edariba_marketplace.services.marketplace.intent_router import classify
-from edariba_marketplace.services.marketplace.search_service import search as run_search
+from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.services.filters import clamp_page, clamp_page_size
+from edariba_marketplace.services.intent_router import classify
+from edariba_marketplace.services.search_service import search as run_search
 
 
 @frappe.whitelist(allow_guest=True)

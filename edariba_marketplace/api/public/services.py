@@ -1,15 +1,15 @@
 """Public services-marketplace endpoints.
 
 Routes:
-  GET /api/method/edariba_marketplace.api.marketplace.services.list_services
-  GET /api/method/edariba_marketplace.api.marketplace.services.get_service
+  GET /api/method/edariba_marketplace.api.public.services.list_services
+  GET /api/method/edariba_marketplace.api.public.services.get_service
 """
 
 import frappe
 
-from edariba_marketplace.api.marketplace.common import ok
-from edariba_marketplace.services.marketplace import repository
-from edariba_marketplace.services.marketplace.filters import (
+from edariba_marketplace.api.public.common import ok
+from edariba_marketplace.services import repository
+from edariba_marketplace.services.filters import (
 	SERVICE_SORT_FIELDS,
 	clamp_page,
 	clamp_page_size,

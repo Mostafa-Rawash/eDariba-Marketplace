@@ -16,9 +16,9 @@ The Marketplace was built in three separate places: a WordPress plugin and theme
 | Authenticated app | **pre-edariba**: Vue 3 Options API SPA at **app.edariba.com** (Vercel) | `pre-edariba/vercel.json`, `INDEX.md` [V] |
 | Core backend / identity | Frappe site **server.edariba.com**, reached first-party through the SPA's `/logic/*` rewrite (`vercel.json`, `vite.config.js:302`). App `accounting` | [V] |
 | Marketplace backend | Separate Frappe app `eDariba-Marketplace/edariba_marketplace` (1 commit, `5c87f7c`). **Which site it is installed on is unknown.** The README says the live site could never be inspected. Postman `base_url` = `http://localhost:8000` | `eDariba-Marketplace/edariba_marketplace/README.md` [U for deployment] |
-| Search | Qdrant (unauthenticated REST) + BGE-M3 embedding API (plain HTTP to a raw IP). One collection per entity: `accountants` / `services` / `projects` | `services/marketplace/config.py`, `qdrant_client.py`, `embedding_client.py` [V code; U runtime] |
+| Search | Qdrant (unauthenticated REST) + BGE-M3 embedding API (plain HTTP to a raw IP). One collection per entity: `accountants` / `services` / `projects` | `services/config.py`, `qdrant_client.py`, `embedding_client.py` [V code; U runtime] |
 | Hostname in brief | `abet.erp.com` **does not appear in any repo**. The real hosts are edariba.com / app.edariba.com / server.edariba.com | grep [V] |
-| WP → Frappe link | One gateway call `POST {EDARIBA_FRAPPE_API_URL}/api/method/edariba_marketplace.api.marketplace.gateway.request`, sent as Guest, cached 5 min in transients. **Disabled unless `EDARIBA_FRAPPE_API_URL` is defined in wp-config.php** (wp-config is not in the repo) | `class-frappe-client.php` [V code; U config] |
+| WP → Frappe link | One gateway call `POST {EDARIBA_FRAPPE_API_URL}/api/method/edariba_marketplace.api.gateway.request`, sent as Guest, cached 5 min in transients. **Disabled unless `EDARIBA_FRAPPE_API_URL` is defined in wp-config.php** (wp-config is not in the repo) | `class-frappe-client.php` [V code; U config] |
 
 **Stacks.** pre-edariba: Vue 3, Vite, Pinia, PrimeVue, Tailwind/DaisyUI, frappe-js-sdk. Backend: Frappe (version not pinned in the repo [U]). WP plugin: PHP 8, WP 6+.
 
@@ -40,7 +40,7 @@ The Marketplace was built in three separate places: a WordPress plugin and theme
   - Proposal: the submitter must own the freelancer profile, cannot propose on their own project, and cannot hold two active proposals on the same project.
   - Inquiry: email validation, status forced to New.
 - **Permissions** (`marketplace/permissions.py` + `hooks.py`): row-level `permission_query_conditions` and `has_permission` for all five main DocTypes. Roles referenced: `Marketplace Provider`, `Marketplace Client`, `Marketplace Moderator`, `System Manager`. **No fixture or patch creates or assigns these roles.** Frappe auto-creates missing roles on DocType sync, but no user ever receives them [V].
-- **Public APIs** (all `allow_guest`, `api/marketplace/`): `accountants.list_accountants/get_accountant`, `services.list_services/get_service`, `projects.list_projects/get_project`, `metadata.get_metadata`, `search.search` (Qdrant), `chat.discover`, `inquiry.submit_inquiry` (Guest write, rate-limited 5/h per `requester_email`), `gateway.request` (allowlisted dispatcher for all of these).
+- **Public APIs** (all `allow_guest`, `api/public/`): `accountants.list_accountants/get_accountant`, `services.list_services/get_service`, `projects.list_projects/get_project`, `metadata.get_metadata`, `search.search` (Qdrant), `chat.discover`, `inquiry.submit_inquiry` (Guest write, rate-limited 5/h per `requester_email`), `gateway.request` (allowlisted dispatcher for all of these).
 - **Indexing**: `doc_events` on Profile/Service/Project enqueue embed+upsert on the `short` queue; unpublishing deletes the point; `reconcile()` is manual and System Manager only. Search revalidates every Qdrant hit against Frappe (`search_service._PUBLIC_LOOKUP`) [V].
 - **Tests**: `test_*.py` stubs per DocType (not run); `tests/test_intent_router.py` (README claims 5/5 passed; not re-run here).
 - **Not present**: authenticated "my profile / my services / my requests / my proposals" endpoints, request response workflow, any email or notification, any DocType Workflow, and packaging (`pyproject.toml`/`setup.py` missing, so `bench get-app` will fail) [V].
@@ -188,7 +188,7 @@ The authenticated workspace belongs in **pre-edariba (app.edariba.com)**, not Fr
 
 **Ownership**: Frappe is authoritative for users, profiles, services, projects, inquiries, proposals and statuses. WP is presentation plus a 5-minute transient cache. Qdrant is a derived index of published Profile/Service/Project only. Requests and proposals are never indexed [V: `indexing_service._DOCTYPE_ENTITY_TYPE`].
 
-| Workflow | DocType | Verified endpoint | Proposed endpoint (new file `api/marketplace/workspace.py`, all `@frappe.whitelist()` non-guest) |
+| Workflow | DocType | Verified endpoint | Proposed endpoint (new file `api/public/workspace.py`, all `@frappe.whitelist()` non-guest) |
 |---|---|---|---|
 | Browse / detail | Profile/Service/Project | `gateway.request` → list/get [V] | — |
 | Semantic search | Qdrant → Frappe | `search.search`, `chat.discover` [V] | — |
@@ -200,7 +200,7 @@ The authenticated workspace belongs in **pre-edariba (app.edariba.com)**, not Fr
 | My profile | Profile | Desk only | `get_my_profile()`, `save_my_profile(data)` (allowlisted fields; never `verification_status`) |
 | My services | Service | Desk only | `list_my_services()`, `save_my_service(data)`, `set_service_publication(name, status)` |
 | Proposals (B) | Proposal | — | `submit_proposal`, `list_my_proposals`, `list_project_proposals(project)`, `set_proposal_status` |
-| Frontend wrappers | — | `logic.js` pattern `call.get('accounting…')` [V] | `logic.marketplace*` wrappers calling `edariba_marketplace.api.marketplace.workspace.*` |
+| Frontend wrappers | — | `logic.js` pattern `call.get('accounting…')` [V] | `logic.marketplace*` wrappers calling `edariba_marketplace.api.public.workspace.*` |
 
 **Prerequisite**: `edariba_marketplace` must be installed **on the same Frappe site as `accounting` (server.edariba.com)**. Otherwise the SPA's `/logic` session cookie cannot authorize marketplace calls. **Decision J1.**
 
@@ -263,12 +263,12 @@ Sidebar group "السوق" (new, in layouts/sidebar.vue)
 | A1 | Package the app (pyproject, patches.txt) and install on staging site of server.edariba.com | `eDariba-Marketplace/edariba_marketplace/pyproject.toml` | J1 | `bench --site staging migrate` clean; DocTypes visible |
 | A2 | Add `requester` (Link User, RO) to Inquiry; remove Guest create DocPerm; guard status/requester fields | `marketplace_inquiry.json/.py`, `permissions.py` (requester can read own) | A1 | Guest `POST /api/resource/Marketplace Inquiry` → 403; requester sees own inquiry |
 | A3 | Role assignment: grant `Marketplace Provider` when a Profile is created by or for a user; moderator verifies in Desk | `marketplace_profile.py` (`after_insert`), fixture for roles (`desk_access=0`) | A1 | Profile owner gets role; non-owner can't edit |
-| A4 | Workspace API: `submit_request`, `list_requests`, `get_request`, `respond_request`, `set_request_status` with transition table and rate limit by user | new `api/marketplace/workspace.py` | A2 | Unit tests per rule (§K) |
+| A4 | Workspace API: `submit_request`, `list_requests`, `get_request`, `respond_request`, `set_request_status` with transition table and rate limit by user | new `api/public/workspace.py` | A2 | Unit tests per rule (§K) |
 | A5 | Emails: new request → provider; response/status → requester. `frappe.sendmail(template=…, delayed=True)` from `after_insert`/`on_update` with a `notified_status` guard against duplicates | `marketplace_inquiry.py`, `templates/emails/marketplace_*.html` | A4 | Email Queue row created once per transition; save succeeds when SMTP is down |
 | A6 | SPA: preserve redirect through guard and signup and set-password; `pendingIntent` | `router/index.js`, `pages/Auth/*.vue`, `services/logic.js` (`redirect_to`) | — | Logged-out deep link → signup/login → lands on form |
 | A7 | SPA pages: request form, requests list (two tabs), request detail with respond; sidebar group | `pages/Marketplace/*.vue`, `stores/MarketplaceStore.js`, `services/logic.js`, `layouts/sidebar.vue`, router | A4, A6 | Manual E2E (§K) passes |
 | A8 | WP: CTAs → app deep links; disable dummy fallback when not demo; fix `/join`; set `EDARIBA_FRAPPE_API_URL` on staging | plugin `class-marketplace-repository.php`, `helpers.php`, the three templates, `marketplace.js` | A1 | Real data renders; Frappe 404 → WP 404, never dummy |
-| A9 | Fix server-side `q` filtering (push into SQL `like` filters before paginating) | `api/marketplace/{accountants,services,projects}.py` | A1 | `total` matches |
+| A9 | Fix server-side `q` filtering (push into SQL `like` filters before paginating) | `api/public/{accountants,services,projects}.py` | A1 | `total` matches |
 
 ### Phase B — Complete workflows
 Provider profile editor and service CRUD (`/marketplace/profile`, `/marketplace/services` + `get/save_my_*`). Proposal API and screens with a transition guard (fixes S2). Project CRUD for clients. Marketplace items in the Header bell or unread badges. Moderator Desk workspace. Search lookup by `name` instead of slug (`search_service.py`).

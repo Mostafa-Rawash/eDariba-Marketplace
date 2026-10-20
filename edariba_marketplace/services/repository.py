@@ -11,7 +11,7 @@ permission hooks enforce the same rule independently.
 
 import frappe
 
-from edariba_marketplace.services.marketplace.serializers import (
+from edariba_marketplace.services.serializers import (
 	PROFILE_LIST_FIELDS,
 	PROJECT_LIST_FIELDS,
 	SERVICE_LIST_FIELDS,

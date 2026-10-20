@@ -28,7 +28,7 @@ from typing import Any
 import frappe
 import requests
 
-from edariba_marketplace.services.marketplace.config import (
+from edariba_marketplace.services.config import (
 	http_timeout_seconds,
 	qdrant_url,
 )

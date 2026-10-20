@@ -1,7 +1,7 @@
 """Public filter/category metadata for the WordPress search UI.
 
 Route:
-  GET /api/method/edariba_marketplace.api.marketplace.metadata.get_metadata
+  GET /api/method/edariba_marketplace.api.public.metadata.get_metadata
 
 Categories come from the managed Marketplace Category doctype (not a
 hardcoded list) since that is now a real, editable taxonomy. Governorate and
@@ -12,7 +12,7 @@ options are ever edited.
 
 import frappe
 
-from edariba_marketplace.api.marketplace.common import ok
+from edariba_marketplace.api.public.common import ok
 
 CACHE_KEY = "edariba_marketplace:metadata"
 CACHE_TTL_SECONDS = 300
