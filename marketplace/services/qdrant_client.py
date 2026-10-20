@@ -10,11 +10,9 @@ Verified live and unauthenticated against the real instance:
     deterministic UUID instead. Full embed -> upsert -> search -> delete
     round trip verified live and cleaned up.
   2026-10-15: switched from one shared "edariba_marketplace" collection to
-    one collection per entity type (config.qdrant_collection_for). Created
-    "services" and "projects" (1024-dim, Cosine, did not exist before).
-    "accountants" already existed with 20 unrelated real records (different
-    schema, no "status" payload key, integer ids 1-20) — reusing it was an
-    explicit decision despite the mismatch; see config.py for the full note.
+    one collection per entity type (config.qdrant_collection_for).
+  2026-10-20: those collections are now prefixed "marketplace_"
+    (marketplace_accountants / _services / _projects); see config.py.
 
 This module only talks to Qdrant — it never calls the embedding API and never
 touches Frappe documents. Every function below now REQUIRES a `collection`

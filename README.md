@@ -72,17 +72,22 @@ side closes an Accepted request. Emails contain only a name and a link to
 `{marketplace_app_url}/marketplace/requests/<id>` (site_config key, default
 `https://app.edariba.com`).
 
-## Qdrant collections — one per entity type (2026-10-15)
+## Qdrant collections — one per entity type, prefixed `marketplace_` (2026-10-20)
 
-Originally used one shared `edariba_marketplace` collection with an
-`entity_type` payload discriminator (still exists on the instance, unused
-now). Switched to a dedicated collection per type on explicit instruction:
+| Entity | Collection |
+|---|---|
+| accountant | `marketplace_accountants` |
+| service | `marketplace_services` |
+| project | `marketplace_projects` |
 
-| Entity | Collection | Status when found |
-|---|---|---|
-| accountant | `accountants` | **Already existed** with 20 unrelated real records (name/address/phone/email/rating/feedback schema, integer ids 1–20, no `status` payload key). Reused anyway per explicit decision — query-safe because our search always filters on `status=Published`, which those points don't have, so Qdrant excludes them automatically. A raw `scroll` through this collection shows both datasets mixed. |
-| service | `services` | Created fresh (1024-dim, Cosine) — did not exist before. |
-| project | `projects` | Created fresh (1024-dim, Cosine) — did not exist before. |
+All 1024-dim, Cosine; created at deploy (see "Deploy"). The prefix keeps this
+app's points apart from everything else on the shared Qdrant instance.
+
+History: first one shared `edariba_marketplace` collection, then (2026-10-15)
+`accountants` / `services` / `projects`, where `accountants` also held 20
+unrelated records. On 2026-10-20 none of those held marketplace data
+(`services` and `projects` were empty); the app no longer uses them, and they
+can be deleted once nobody else needs them.
 
 Config: `services/config.py:qdrant_collection_for(entity_type)`,
 overridable via `QDRANT_COLLECTION_ACCOUNTANTS` / `_SERVICES` / `_PROJECTS`.
@@ -97,8 +102,9 @@ A "unified" search across multiple entity types is a fan-out — one Qdrant
   Bearer <key>`, body `{"inputs": "<text>"}` (not `"input"`), response is a
   bare `[[1024 floats]]`.
 - Full pipeline — embed → Qdrant upsert → search → delete → verify-gone —
-  run against all three real collections (`accountants`/`services`/`projects`),
-  cleaned up after itself each time.
+  run against the earlier collections (`accountants`/`services`/`projects`)
+  on 2026-10-15, cleaned up after itself each time. Not yet re-run against
+  the `marketplace_*` names.
 - Caught and fixed a real bug this way: Qdrant rejects string point IDs
   (`400 not a valid point ID`); `indexing_service._point_id` now uses a
   deterministic `uuid5(doctype:name)`.
@@ -172,6 +178,11 @@ docker exec edariba-backend-1 bench --site server.edariba.com set-config qdrant_
 docker exec edariba-backend-1 bench --site server.edariba.com set-config embedding_api_url "http://44.194.201.67:3778/embed"
 docker exec edariba-backend-1 bench --site server.edariba.com set-config embedding_api_key "<key>"
 docker exec edariba-backend-1 bench --site server.edariba.com set-config marketplace_app_url "https://app.edariba.com"
+
+# 5b. Create the Qdrant collections (once; from any machine that reaches Qdrant)
+for c in marketplace_accountants marketplace_services marketplace_projects; do
+  curl -X PUT "http://84.235.250.108:9080/collections/$c" -H 'Content-Type: application/json'     -d '{"vectors": {"size": 1024, "distance": "Cosine"}}'
+done
 
 # 6. Restart
 docker restart edariba-backend-1 edariba-frontend-1 edariba-websocket-1 edariba-scheduler-1 edariba-queue-short-1 edariba-queue-long-1

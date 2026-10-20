@@ -9,6 +9,7 @@
 > - **J6**: implemented as `New → Responded → Accepted → Closed`, Declined by the provider, Cancelled by the requester (`services/request_rules.py`).
 > - Roles: no `Marketplace Provider` / `Marketplace Client` roles. One profile per user with `offers_services` / `accepts_projects` switches; only `Marketplace Moderator` is added (fixture).
 > - `chat.discover` merged into `search.search(auto_intent=1)`.
+> - Qdrant collections renamed to `marketplace_accountants` / `marketplace_services` / `marketplace_projects` (fixes **S6**: no more sharing `accountants` with unrelated records).
 > - Done in the backend: A1 (packaging), A2, A3 (as above), A4 (`api/workspace.py`), A5 (emails), A9. See `README.md` for what remains and the deploy steps.
 
 ## Context

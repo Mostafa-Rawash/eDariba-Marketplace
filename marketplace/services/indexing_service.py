@@ -1,7 +1,7 @@
 """Keeps the per-entity-type Qdrant collections (config.qdrant_collection_for)
 in sync with published Marketplace Profile/Service/Project records — one
-collection each: "accountants", "services", "projects" (2026-10-15 decision;
-see config.py for the "accountants" name-collision note).
+collection each: "marketplace_accountants", "marketplace_services",
+"marketplace_projects" (see config.py).
 
 RECONCILIATION NOTE — read before changing payload field names below.
 These field names were chosen against the originally-discovered
@@ -139,7 +139,7 @@ def build_project_text(doc) -> str:
 
 # --------------------------------------------------------------- sync ---
 
-_POINT_ID_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, "edariba_marketplace.points")
+_POINT_ID_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, "marketplace.points")
 
 
 def _point_id(doctype: str, name: str) -> str:

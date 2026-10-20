@@ -10,7 +10,7 @@ x-tokenization-time/x-queue-time response headers):
   Body:    {"inputs": "<text>"}          -- NOT "input", NO "model" field
   Response: a bare JSON list of vectors, one per input, e.g. for one input
             string: [[0.0879, 0.0179, ...]]  (1024 floats; matches the
-            edariba_marketplace Qdrant collection's vector size exactly)
+            marketplace_* Qdrant collections' vector size exactly)
 
 Earlier probes without a key got 401 on every call (including a bare GET /),
 which is why this needed a real key before being implemented — guessing the

@@ -25,9 +25,9 @@ def qdrant_url() -> str:
 
 
 _ENTITY_COLLECTION_DEFAULTS = {
-	"accountant": "accountants",
-	"service": "services",
-	"project": "projects",
+	"accountant": "marketplace_accountants",
+	"service": "marketplace_services",
+	"project": "marketplace_projects",
 }
 
 _ENTITY_COLLECTION_ENV = {
@@ -38,17 +38,12 @@ _ENTITY_COLLECTION_ENV = {
 
 
 def qdrant_collection_for(entity_type: str) -> str:
-	"""One collection per entity type, decided explicitly by the user
-	(2026-10-15) rather than the single shared "edariba_marketplace"
-	collection used earlier. "accountants" already existed on the live
-	instance with 20 unrelated real-looking records (different schema: name/
-	address/phone/email/rating/feedback, integer ids 1-20, no "status" field)
-	— that collision was flagged and the explicit decision was to reuse it
-	anyway. It's query-safe (our search always filters on a "status" payload
-	key that those older points don't have, so Qdrant's match filter excludes
-	them), but a `scroll` through "accountants" will show both datasets mixed
-	together. "services" and "projects" were newly created (PUT .../collections/<name>,
-	1024-dim Cosine, matching the others) since neither existed before."""
+	"""One collection per entity type, each prefixed "marketplace_"
+	(2026-10-20). The prefix keeps this app's points apart from other
+	collections on the same instance: until then accountants were written
+	into a pre-existing "accountants" collection that also held 20 unrelated
+	records. All three are 1024-dim, Cosine, created at deploy time
+	(README "Deploy")."""
 	if entity_type not in _ENTITY_COLLECTION_DEFAULTS:
 		frappe.throw(f"Unknown entity_type for Qdrant collection lookup: {entity_type}")
 	env_key = _ENTITY_COLLECTION_ENV[entity_type]
