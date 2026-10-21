@@ -22,17 +22,22 @@ _PUBLIC_LOOKUP = {
 	# All three DocTypes use autoname "field:slug", so the Qdrant payload's
 	# "frappe_name" (== doc.name) is always equal to the slug — the existing
 	# get_*_by_slug repository functions are the correct lookup as-is.
-	"accountant": lambda name: _safe(lambda: repository.get_profile_by_slug(name)),
-	"service": lambda name: _safe(lambda: repository.get_service_by_slug(name)),
-	"project": lambda name: _safe(lambda: repository.get_project_by_slug(name)),
+	"accountant": ("Marketplace Profile", repository.get_profile_by_slug),
+	"service": ("Marketplace Service", repository.get_service_by_slug),
+	"project": ("Marketplace Project", repository.get_project_by_slug),
 }
 
 
-def _safe(fn):
-	try:
-		return fn()
-	except Exception:
+def _public_record(entity_type: str, slug: str) -> dict | None:
+	"""The published record behind a Qdrant hit, or None when it was deleted or
+	unpublished since it was indexed (or never existed in Frappe). Checks
+	existence first instead of catching the getter's error: frappe.throw
+	queues its "not found" message into the response even when the exception
+	is caught, and the client would show it as an error."""
+	doctype, getter = _PUBLIC_LOOKUP[entity_type]
+	if not frappe.db.exists(doctype, {"slug": slug, "publication_status": "Published"}):
 		return None
+	return getter(slug)
 
 
 def validate_entity_types(entity_types: list[str] | None) -> list[str]:
@@ -75,7 +80,7 @@ def _search_one_entity_type(entity_type: str, vector: list[float], qdrant_filter
 		frappe_name = payload.get("frappe_name")
 		if not frappe_name:
 			continue
-		record = _PUBLIC_LOOKUP[entity_type](frappe_name)
+		record = _public_record(entity_type, frappe_name)
 		if record is None:
 			continue  # deleted or unpublished since the point was indexed
 		results.append({"entity_type": entity_type, "score": row.get("score"), **record})
