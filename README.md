@@ -28,9 +28,11 @@ marketplace/
                           metadata, search
   api/gateway.py          one read-only URL for WordPress
   api/workspace.py        logged-in request flow for app.edariba.com
+  api/provider.py         logged-in self-service: own profile, own services,
+                          proposals (freelancer and project owner)
   services/               repository, serializers, filters, Qdrant/embedding
                           clients, indexing, intent router, request rules,
-                          partner badge, notifications
+                          provider rules, uploads, partner badge, notifications
   templates/emails/       request emails (Arabic, RTL)
 ```
 
@@ -86,6 +88,33 @@ on their User record. Emails contain only a name and a link to
 `{marketplace_app_url}/marketplace/requests/<id>` (site_config key, default
 `https://app.edariba.com`).
 
+## Provider self-service (`api/provider.py`)
+
+Same rules as the request flow: login required, the user comes from the
+session, ownership is re-checked on every call, a record that isn't yours
+answers "not found", and only allowlisted fields are written
+(`services/provider_rules.py`). Response shapes, with sample records:
+`pre-edariba/src/marketplace/DUMMY_DATA.md`.
+
+| Function | Who | What |
+|---|---|---|
+| `get_my_profile` | anyone | Your profile, or 404 if you have none |
+| `save_my_profile(profile)` | anyone | First call creates it (Pending, Draft; slug from your email). `published` toggles the listing once Verified |
+| `resubmit_profile` | owner | Rejected → Pending (the only verification change an owner may make) |
+| `list_my_services` | owner | All your services, any status |
+| `save_my_service(service)` | owner | Create/update. `status` Draft may be incomplete; Published needs every field |
+| `set_service_status(name, status)` | owner | Published / Unpublished |
+| `delete_my_service(name)` | owner | Refused if a request refers to it |
+| `submit_proposal(project, amount, duration_days, cover_letter)` | verified freelancer | Published projects only; one active proposal per project; 20 per hour |
+| `list_my_proposals` | freelancer | Proposals you sent |
+| `withdraw_proposal(name)` | freelancer | While Submitted/Shortlisted |
+| `list_project_proposals(project)` | project owner | Proposals on your project; `meta.project` carries the project in any status |
+| `set_proposal_status(project, name, status)` | project owner | Shortlist, un-shortlist, accept, reject. Accepting rejects the other active ones and closes the project |
+
+Images (avatar, thumbnail) arrive as PNG/JPEG data URLs of at most 2 MB, are
+checked by file signature, and are stored as public File records; any other
+URL is refused. No emails are sent for proposals yet.
+
 ## Qdrant collections — one per entity type, prefixed `marketplace_` (2026-10-20)
 
 | Entity | Collection |
@@ -134,10 +163,12 @@ a real database.
 
 ## Known gaps
 
-- No self-service profile/service editing yet (Phase B: `get/save_my_profile`,
-  `list/save_my_service`). Until then a moderator creates profiles in Desk.
+- Profile/service self-service and proposals are in `api/provider.py`, but
+  there is still no API to post a project (clients' projects are created in
+  Desk), no rejection-reason field on the profile, and no proposal emails.
+- Editing a Verified profile keeps it Verified; moderators are not asked to
+  re-review changes.
 - The partner badge is shown but does not rank partners higher yet.
-- Project and Proposal have no app API yet; they are reachable only in Desk.
 - `filters.category` from `auto_intent` is reported in `meta` but not applied
   as a Qdrant filter (the accountant payload has no category).
 - Search revalidates hits by slug (`search_service._PUBLIC_LOOKUP`); editing a
