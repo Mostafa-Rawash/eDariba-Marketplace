@@ -25,12 +25,7 @@ class MarketplaceProfile(Document):
 			return
 
 		if self.has_value_changed("verification_status") and not is_moderator():
-			# The one change an owner may make: send a rejected profile back
-			# for review (api/provider.resubmit_profile).
-			previous = (self.get_doc_before_save() or {}).get("verification_status")
-			resubmit = previous == "Rejected" and self.verification_status == "Pending"
-			if not (resubmit and self.user == frappe.session.user):
-				frappe.throw(_("Only a moderator can change verification status."))
+			frappe.throw(_("Only a moderator can change verification status."))
 
 	def _guard_publish_transition(self):
 		if not self.has_value_changed("publication_status"):

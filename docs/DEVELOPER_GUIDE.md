@@ -166,7 +166,7 @@ Base path `marketplace.api.public`. Everything below returns **published records
 Notes:
 
 - `q` is a plain substring match on name/headline (accountants) or title (services, projects). `%` and `_` are literal.
-- Search is by meaning: send the user's sentence as `query`. Without `entity_types` it searches all three collections and ranks the merged results by score; pass `entity_types` to search one type (WordPress does this per tab). `auto_intent=1` (keyword intent guessing) is not used by WordPress.
+- **`auto_intent=1`** is the "AI assistant" box: send the user's sentence as `query` and the backend picks the entity type (and category, when it recognises one) from keywords. `meta.intent_matched` tells you whether it understood. Use it for the home-page search box. Use plain `search` with explicit `entity_types` for a filtered results page.
 - Search needs the embedding API key on the server. **Until it is set, `search.search` returns an error.** Design an error/empty state for it, and fall back to the `list_*` endpoints with `q`.
 
 **Profile fields** (list): `name, display_name, slug, headline, profile_type, governorate, area, experience_years, avatar, bio, offers_services, accepts_projects, specialties[], is_partner`. Detail adds `case_study_title, case_study_text, qualifications[{title,issuer,year}], published_services[]`.
@@ -371,7 +371,7 @@ What to do:
 
 ### 5.1 Where the code is
 
-The marketplace plugin and templates are **not on `main` yet** (`main` reverted the merge). They are on branch **`feat/marketplace-stitch-ui`** of the `edariba-theme` repo:
+The marketplace plugin and templates are **not on `main` yet**. They are on branch **`feat/marketplace-stitch-ui`** of the `edariba-theme` repo:
 
 ```
 plugins/edariba-marketplace/
@@ -379,55 +379,95 @@ plugins/edariba-marketplace/
   includes/class-frappe-client.php        HTTP client → gateway (the only place that talks to Frappe)
   includes/class-frappe-adapter.php       Frappe fields → the array shape templates use
   includes/class-marketplace-repository.php  templates read only through this
-  includes/class-search-service.php       list/search params → backend; PHP matching only in demo mode
-  includes/class-dummy-data-provider.php  demo data (demo mode only)
+  includes/class-dummy-data-provider.php  demo data
   includes/class-routes.php               /marketplace/* rewrite rules
-  includes/class-seo-integration.php      noindex in demo mode and on search pages, canonical URLs
-  includes/class-sitemap.php              /marketplace-sitemap.xml, added to Rank Math's index and robots.txt
-  includes/helpers.php                    edariba_mp_url(), edariba_mp_app_url(), edariba_mp_avatar(), formatting
+  includes/class-search-service.php       PHP search over fetched rows
+  includes/class-chat-router.php          PHP keyword router (duplicate of the backend's)
+  includes/class-seo-integration.php      noindex while demo mode is on
+  includes/helpers.php                    edariba_mp_url(), edariba_mp_repo(), formatting
 themes/edariba-theme/marketplace/*.php    page templates + partials
 ```
 
-Routes: `/marketplace/`, `/marketplace/accountants[/slug]`, `/marketplace/services[/slug]`, `/marketplace/projects[/slug]`, `/marketplace/search`, plus `/marketplace-sitemap.xml`.
+Routes: `/marketplace/`, `/marketplace/accountants[/slug]`, `/marketplace/services[/slug]`, `/marketplace/projects[/slug]`, `/marketplace/search`.
 
 ### 5.2 Configure
 
-The plugin calls the gateway through the web app's `/logic` proxy by default:
+In `wp-config.php` (never commit it):
 
 ```php
-define( 'EDARIBA_FRAPPE_API_URL', 'https://app.edariba.com/logic' ); // default, set in the plugin
+define( 'EDARIBA_FRAPPE_API_URL', 'https://server.edariba.com' );
 ```
 
-Define it in `wp-config.php` only to point elsewhere, or as `''` to run on demo data.
+Without it the plugin runs entirely on dummy data.
 
-**Demo mode** is on only when no API URL is set. With the backend configured, demo data is never shown: a missing record is a 404, an outage is a 503 page / empty list. To keep demo data (and `noindex`) on purpose, add `add_filter( 'edariba_mp_demo_mode', '__return_true' );`.
+### 5.3 Required fixes before going live
 
-### 5.3 How the plugin uses the backend
+These are bugs in the plugin as it stands. Until 1 and 2 are fixed, **WordPress shows dummy data even when configured**.
 
-- **Gateway:** `api/method/marketplace.api.gateway.request`; the envelope is read from Frappe's `message`.
-- **Lists:** query, filters, sort and page go to the `list` actions; pagination comes from the backend.
-- **Search page:** no intent guessing. The tab comes from `?tab` (default accountants); inside it, the query is searched by meaning (`search/query` with `entity_types: [<tab>]`, `filters.location` = governorate). While search fails (e.g. embedding key not set) it falls back to the `list` action with `q`, and stops calling search for 60 s after a failure. Counts are hidden for meaning results.
-- **Profiles:** `is_partner` shows the "شريك eDariba" badge; `offers_services = false` hides the request button. Missing avatars/thumbnails render an initial badge/icon panel.
-- **Categories and governorates** come from `metadata/get`.
+1. **Gateway URL changed.** `class-frappe-client.php` posts to `api/method/edariba_marketplace.api.marketplace.gateway.request`. It is now:
 
-Known backend limits that show in WordPress:
+   ```php
+   'api/method/marketplace.api.gateway.request'
+   ```
 
-- `search.search` returns `total` from an over-fetch (`min(page × page_size × 2, 100)` per collection), so the page count of meaning results is approximate.
-- Meaning search only filters by `location` (and `specialty`, matched against `specialization_ids`); category, price and budget filters apply to keyword lists only.
+2. **Unwrap Frappe's `message`.** The client checks `$decoded['success']`, but Frappe returns `{"message": {"success": true, …}}`, so the check always fails and the repository falls back to dummy data. Read the envelope from `message`:
+
+   ```php
+   $decoded  = json_decode( wp_remote_retrieve_body( $response ), true );
+   $envelope = is_array( $decoded ) ? ( $decoded['message'] ?? null ) : null;
+   if ( ! is_array( $envelope ) || empty( $envelope['success'] ) ) {
+       return null;
+   }
+   $data = array(
+       'data'       => $envelope['data'] ?? null,
+       'pagination' => $envelope['pagination'] ?? null,
+       'meta'       => $envelope['meta'] ?? array(),
+   );
+   ```
+
+3. **Never show dummy data in production.** `Marketplace_Repository` falls back to `Dummy_Data_Provider` on *any* failure, including a real 404. That can show invented accountants under real URLs. When demo mode is off:
+   - a missing record → the WordPress 404 template;
+   - Frappe unreachable → an error/empty state;
+   - never dummy data.
+
+   Keep the fallback only when `edariba_mp_is_demo_mode()` is true, and turn demo mode off in production so `Seo_Integration` stops forcing `noindex`.
+
+4. **Use server-side search and pagination.** The repository fetches `page_size => 50` and `Search_Service` filters in PHP, so record 51+ is invisible. Pass `q`, filters, `page` and `page_size` through to the list actions and render the backend's `pagination`.
+
+5. **Wire the AI box to the backend.** On the home page, send the visitor's sentence to `search/query` with `auto_intent => 1` instead of `class-chat-router.php`, and retire the PHP router (the backend's `intent_router.py` is the same keyword list). Keep a fallback to `list` with `q` while search returns errors (embedding key not set yet).
+
+6. **Map the new fields.** `Frappe_Adapter::accountant()` should also pass `is_partner` (show the "شريك eDariba" badge), `offers_services` and `accepts_projects`.
+
+7. **Fix `/join`.** `marketplace-home.php` links to `https://app.edariba.com/join`, which doesn't exist. Use `/signup`.
 
 ### 5.4 Calls to action → the app
 
-WordPress never submits forms. Buttons are plain links into the app carrying **public slugs only** (`edariba_mp_app_url()`, allowlisted routes):
+WordPress never submits forms. Replace the demo form and demo buttons (`data-edariba-demo-form`, `data-edariba-demo-action`) with plain links into the app, carrying **public slugs only**:
 
 | Template | Button | Link |
 |---|---|---|
-| `accountant-profile.php` | **"أرسل طلبًا"** | `https://app.edariba.com/marketplace/request/new?profile={slug}` |
+| `accountant-profile.php` | "استفسار مباشر وسري" form → button **"أرسل طلبًا"** | `https://app.edariba.com/marketplace/request/new?profile={slug}` |
 | `service-detail.php` | **"اطلب الخدمة الآن"** | `https://app.edariba.com/marketplace/request/new?profile={provider_slug}&service={slug}` |
-| `project-detail.php`, `card-project.php` | none | Proposals have no API yet; a note points to the app. |
+| `project-detail.php` | **"تقديم عرض"** | Not available yet (proposals have no API). Hide the button or link to the app's project page once Phase B ships. |
+
+Suggested helper next to `edariba_mp_url()`:
+
+```php
+function edariba_mp_app_url( string $route, array $args = array() ): string {
+	$routes = array( 'request' => '/marketplace/request/new' );   // allowlist
+	if ( ! isset( $routes[ $route ] ) ) {
+		return 'https://app.edariba.com/';
+	}
+	$args = array_map( 'sanitize_title', array_filter( $args ) ); // slugs only
+	return add_query_arg( $args, 'https://app.edariba.com' . $routes[ $route ] );
+}
+```
+
+Hide the button when `offers_services` is false (the backend would reject the request anyway).
 
 ### 5.5 Caching
 
-`Frappe_Client` caches each successful gateway response in a transient for 5 minutes, which matches the backend's own cache; errors are never cached. The sitemap is cached for 1 hour. After a moderator publishes a profile, it can take up to 5 minutes (plus WP Rocket's page cache) to appear.
+`Frappe_Client` caches each gateway response in a transient for 5 minutes, which matches the backend's own cache. After a moderator publishes a profile, it can take up to 5 minutes (plus WP Rocket's page cache) to appear. Don't cache error responses.
 
 ---
 
@@ -451,7 +491,7 @@ If you need an endpoint that isn't here, ask for it in the marketplace repo rath
 |---|---|
 | Directory page (WP) | gateway `accountant/list` |
 | Accountant page (WP) | gateway `accountant/get {slug}` |
-| AI search box (WP) | gateway `search/query {query, entity_types: [<tab>]}`, fallback `<tab>/list {q}` |
+| AI search box (WP) | gateway `search/query {query, auto_intent: 1}` |
 | Filters (categories, governorates) | `metadata.get_metadata` / gateway `metadata/get` |
 | Send a request (app) | `workspace.submit_request` |
 | My requests (app) | `workspace.list_requests {box}` |
