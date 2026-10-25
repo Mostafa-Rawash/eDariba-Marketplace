@@ -108,15 +108,12 @@ def submit_request(
 	profile = frappe.db.get_value(
 		"Marketplace Profile",
 		recipient,
-		["user", "publication_status", "verification_status", "offers_services"],
+		["user", "publication_status", "offers_services"],
 		as_dict=True,
 	)
-	if (
-		not profile
-		or profile.publication_status != "Published"
-		or profile.verification_status != "Verified"
-		or not profile.offers_services
-	):
+	# Published and offering services is enough: owners activate their own
+	# profiles, so verification does not gate requests.
+	if not profile or profile.publication_status != "Published" or not profile.offers_services:
 		frappe.throw(_("This accountant is not available for requests."))
 	if profile.user == user:
 		frappe.throw(_("You cannot send a request to yourself."))

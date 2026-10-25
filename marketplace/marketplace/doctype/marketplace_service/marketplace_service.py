@@ -27,8 +27,8 @@ class MarketplaceService(Document):
 		if not self.has_value_changed("publication_status"):
 			return
 		if self.publication_status == "Published":
-			if not (self.title and self.description and self.thumbnail):
-				frappe.throw(_("Title, description, and thumbnail are required before publishing."))
+			if not (self.title and self.description):
+				frappe.throw(_("Title and description are required before publishing."))
 			if not frappe.db.get_value("Marketplace Profile", self.provider, "offers_services"):
 				frappe.throw(_("Turn on 'Offers Services' on the profile before publishing a service."))
 			self.published_at = now_datetime()

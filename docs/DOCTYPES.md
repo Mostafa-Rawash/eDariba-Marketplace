@@ -8,7 +8,7 @@ Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/
 |---|---|---|---|---|
 | [Marketplace Category](#marketplace-category) | Marketplace | field:slug | No | 4 |
 | [Marketplace Inquiry](#marketplace-inquiry) | Marketplace | hash | No | 12 |
-| [Marketplace Profile](#marketplace-profile) | Marketplace | field:slug | No | 19 |
+| [Marketplace Profile](#marketplace-profile) | Marketplace | field:slug | No | 20 |
 | [Marketplace Project](#marketplace-project) | Marketplace | field:slug | No | 15 |
 | [Marketplace Proposal](#marketplace-proposal) | Marketplace | hash | No | 9 |
 | [Marketplace Qualification](#marketplace-qualification) | Marketplace |  | Yes | 3 |
@@ -83,7 +83,8 @@ Professional profile for an accountant or accounting firm, shown by card-account
 
 | Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
 |---|---|---|---|---|---|---|---|---|---|
-| `user` | User | Link | User | ✓ | ✓ |  |  |  | 1 |
+| `user` | User | Link | User | ✓ | ✓ | __user |  |  | 1 |
+| `company` | Company | Link | Company |  |  |  |  |  |  |
 | `profile_type` | Profile Type | Select | Individual, Firm | ✓ |  | Individual | ✓ |  |  |
 | `display_name` | Display Name | Data |  | ✓ |  |  | ✓ |  |  |
 | `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
@@ -101,9 +102,9 @@ Professional profile for an accountant or accounting firm, shown by card-account
 | `case_study_text` | Case Study Text | Small Text |  |  |  |  |  |  |  |
 | _Marketplace Roles_ (Section Break) | | | | | | | | | |
 | `offers_services` | Offers Services | Check |  |  |  | 1 |  |  |  |
-| `accepts_projects` | Accepts Projects | Check |  |  |  | 0 |  |  |  |
+| `accepts_projects` | Accepts Projects | Check |  |  |  | 1 |  |  |  |
 | _Status_ (Section Break) | | | | | | | | | |
-| `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Pending | ✓ |  | 1 |
+| `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Pending | ✓ |  |  |
 | `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |  |
 | `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |  |
 
@@ -116,6 +117,7 @@ Professional profile for an accountant or accounting firm, shown by card-account
 | Guest | 0 | ✓ |  |  |  |  |
 | System Manager | 1 | ✓ | ✓ |  |  |  |
 | Marketplace Moderator | 1 | ✓ | ✓ |  |  |  |
+| Invoicing Owner | 0 | ✓ | ✓ | ✓ |  |  |
 
 ## Marketplace Project
 
@@ -131,7 +133,7 @@ A freelance project posted by a client, shown by card-project.php, project-detai
 | `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
 | `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
 | `category` | Category | Link | Marketplace Category | ✓ |  |  | ✓ |  |  |
-| `client` | Client | Link | User | ✓ |  |  |  |  | 1 |
+| `client` | Client | Link | User | ✓ |  | __user |  |  | 1 |
 | `client_display_name` | Client Display Name | Data |  | ✓ |  |  |  |  |  |
 | `client_type` | Client Type | Select | شركة ناشئة, منشأة صغيرة, شركة متوسطة, شركة قيد التأسيس, مجموعة شركات, منظمة غير ربحية | ✓ |  |  | ✓ |  |  |
 | _Brief_ (Section Break) | | | | | | | | | |
@@ -156,6 +158,7 @@ A freelance project posted by a client, shown by card-project.php, project-detai
 | Guest | 0 | ✓ |  |  |  |  |
 | System Manager | 1 | ✓ | ✓ |  |  |  |
 | Marketplace Moderator | 1 | ✓ | ✓ |  |  |  |
+| Invoicing Owner | 0 | ✓ | ✓ | ✓ |  |  |
 
 ## Marketplace Proposal
 
@@ -185,6 +188,7 @@ ASSUMPTION / NOT YET IN THE WORDPRESS UI: project-detail.php's 'تقديم عر�
 |---|---|---|---|---|---|---|
 | System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | 0 | ✓ |  |  |  |  |
+| Invoicing Owner | 0 | ✓ |  | ✓ |  |  |
 
 ## Marketplace Qualification
 
@@ -213,13 +217,13 @@ A fixed-price service package published by a provider, shown by card-service.php
 | `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
 | `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
 | `provider` | Provider | Link | Marketplace Profile | ✓ |  |  | ✓ |  |  |
-| `category` | Category | Link | Marketplace Category | ✓ |  |  | ✓ |  |  |
-| `price` | Price | Currency |  | ✓ |  |  | ✓ |  |  |
+| `category` | Category | Link | Marketplace Category |  |  |  | ✓ |  |  |
+| `price` | Price | Currency |  |  |  |  | ✓ |  |  |
 | `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |  |
 | `price_unit` | Price Unit | Select | Total, Monthly, Per Session | ✓ |  | Total |  |  |  |
 | _Content_ (Section Break) | | | | | | | | | |
-| `thumbnail` | Thumbnail | Attach Image |  | ✓ |  |  |  |  |  |
-| `description` | Description | Text Editor |  | ✓ |  |  |  |  |  |
+| `thumbnail` | Thumbnail | Attach Image |  |  |  |  |  |  |  |
+| `description` | Description | Text Editor |  |  |  |  |  |  |  |
 | `badges` | Badges | Table | Marketplace Tag |  |  |  |  |  |  |
 | `features` | Features | Table | Marketplace Tag |  |  |  |  |  |  |
 | _Status_ (Section Break) | | | | | | | | | |
@@ -233,6 +237,7 @@ A fixed-price service package published by a provider, shown by card-service.php
 | System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
 | Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
 | Guest | 0 | ✓ |  |  |  |  |
+| Invoicing Owner | 0 | ✓ | ✓ | ✓ | ✓ |  |
 
 ## Marketplace Tag
 

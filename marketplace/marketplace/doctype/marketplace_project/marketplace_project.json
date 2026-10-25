@@ -49,7 +49,8 @@
       "reqd": 1,
       "in_standard_filter": 1,
       "description": "Linked to User directly, not to Marketplace Profile — a project poster is a client/business, not necessarily a listed service provider. Avoids inventing a second client-account entity. Public pages show client_display_name instead. Permlevel 1: hidden from Guest (public /api/resource reads); only System Manager and Marketplace Moderator see it.",
-      "permlevel": 1
+      "permlevel": 1,
+      "default": "__user"
     },
     {
       "fieldname": "client_display_name",
@@ -185,6 +186,14 @@
       "permlevel": 1,
       "read": 1,
       "write": 1
+    },
+    {
+      "role": "Invoicing Owner",
+      "permlevel": 0,
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0
     }
   ]
 }

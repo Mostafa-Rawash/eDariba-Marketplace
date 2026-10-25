@@ -16,15 +16,24 @@ class MarketplaceProfile(Document):
 		self._guard_publish_transition()
 
 	def _guard_moderation_fields(self):
-		"""verification_status is a moderation decision, not something the
-		profile owner can set on themselves — mirrors the task rule that a
-		professional cannot change their own verification outcome."""
+		"""The owner activates their own profile: Pending (not active) <->
+		Verified (active). Rejected stays a moderator decision; the owner can
+		only send a rejected profile back to Pending."""
 		if self.is_new():
 			if self.verification_status and self.verification_status != "Pending":
 				frappe.throw(_("New profiles always start as Pending verification."))
 			return
 
-		if self.has_value_changed("verification_status") and not is_moderator():
+		if not self.has_value_changed("verification_status") or is_moderator():
+			return
+		previous = (self.get_doc_before_save() or {}).get("verification_status")
+		owner = self.user == frappe.session.user
+		allowed = (previous, self.verification_status) in (
+			("Pending", "Verified"),
+			("Verified", "Pending"),
+			("Rejected", "Pending"),
+		)
+		if not (owner and allowed):
 			frappe.throw(_("Only a moderator can change verification status."))
 
 	def _guard_publish_transition(self):
@@ -32,8 +41,6 @@ class MarketplaceProfile(Document):
 			return
 
 		if self.publication_status == "Published":
-			if self.verification_status != "Verified":
-				frappe.throw(_("Only a verified profile can be published."))
 			if not (self.bio and self.headline and self.experience_years is not None):
 				frappe.throw(_("Bio, headline, and years of experience are required before publishing."))
 			self.published_at = now_datetime()

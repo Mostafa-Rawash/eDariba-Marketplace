@@ -53,6 +53,7 @@ import time
 import uuid
 
 import frappe
+from frappe.utils import strip_html
 
 from marketplace.services import qdrant_client
 from marketplace.services.config import qdrant_collection_for
@@ -94,10 +95,31 @@ def build_profile_payload(doc) -> dict:
 	}
 
 
+# How profile_type reads in a search query ("مكتب محاسبة", "محاسب مستقل").
+_PROFILE_TYPE_TEXT = {"Individual": "محاسب مستقل", "Firm": "مكتب محاسبة"}
+
+
 def build_profile_text(doc) -> str:
-	parts = [doc.display_name, doc.headline, doc.bio]
+	"""Everything a client might search an accountant by, as plain text: who
+	they are, where they work, what they know, what they have done and what
+	they sell. Text Editor fields are stored as HTML when edited in Desk, so
+	tags are stripped before embedding."""
+	parts = [
+		doc.display_name,
+		_PROFILE_TYPE_TEXT.get(doc.profile_type),
+		doc.headline,
+		" - ".join(p for p in (doc.governorate, doc.area) if p),
+		strip_html(doc.bio or ""),
+	]
 	parts += [row.label for row in doc.specialties]
-	return "\n".join(p for p in parts if p)
+	parts += [" - ".join(p for p in (row.title, row.issuer) if p) for row in doc.qualifications]
+	parts += [doc.case_study_title, doc.case_study_text]
+	parts += frappe.get_all(
+		"Marketplace Service",
+		filters={"provider": doc.name, "publication_status": "Published"},
+		pluck="title",
+	)
+	return "\n".join(p.strip() for p in parts if p and p.strip())
 
 
 def build_service_payload(doc) -> dict:
@@ -114,7 +136,7 @@ def build_service_payload(doc) -> dict:
 
 
 def build_service_text(doc) -> str:
-	parts = [doc.title, doc.description]
+	parts = [doc.title, strip_html(doc.description or "")]
 	parts += [row.label for row in doc.badges] + [row.label for row in doc.features]
 	return "\n".join(p for p in parts if p)
 
@@ -133,7 +155,7 @@ def build_project_payload(doc) -> dict:
 
 
 def build_project_text(doc) -> str:
-	parts = [doc.title, doc.description] + [row.label for row in doc.required_skills]
+	parts = [doc.title, strip_html(doc.description or "")] + [row.label for row in doc.required_skills]
 	return "\n".join(p for p in parts if p)
 
 
@@ -233,13 +255,23 @@ def on_profile_delete(doc, method=None):
 	_delete_enqueue("Marketplace Profile", doc.name)
 
 
+def _reindex_provider(provider: str | None):
+	"""The provider's profile vector includes their published service titles
+	(build_profile_text), so a service change re-embeds the profile too."""
+	if provider:
+		payload_fn, text_fn = _PATHS["Marketplace Profile"]
+		_enqueue("Marketplace Profile", provider, payload_fn, text_fn)
+
+
 def on_service_update(doc, method=None):
 	payload_fn, text_fn = _PATHS["Marketplace Service"]
 	_enqueue("Marketplace Service", doc.name, payload_fn, text_fn)
+	_reindex_provider(doc.provider)
 
 
 def on_service_delete(doc, method=None):
 	_delete_enqueue("Marketplace Service", doc.name)
+	_reindex_provider(doc.provider)
 
 
 def on_project_update(doc, method=None):

@@ -29,11 +29,21 @@ class TestMarketplaceProfile(unittest.TestCase):
 		with self.assertRaises(frappe.ValidationError):
 			doc.validate()
 
-	def test_cannot_publish_without_verification(self):
+	def test_can_publish_without_verification(self):
+		# The owner publishes their own profile; verification does not gate it.
 		doc = _profile()
 		doc.verification_status = "Pending"
 		doc.publication_status = "Published"
 		# simulate "not new" so the publish-transition guard runs
+		doc.get_doc_before_save = lambda: frappe.get_doc(
+			{**doc.as_dict(), "publication_status": "Draft"}
+		)
+		doc._guard_publish_transition()
+		self.assertTrue(doc.published_at)
+
+	def test_cannot_publish_without_bio(self):
+		doc = _profile(bio="")
+		doc.publication_status = "Published"
 		doc.get_doc_before_save = lambda: frappe.get_doc(
 			{**doc.as_dict(), "publication_status": "Draft"}
 		)
