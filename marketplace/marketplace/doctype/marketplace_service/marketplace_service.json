@@ -10,7 +10,6 @@
   "track_changes": 1,
   "engine": "InnoDB",
   "title_field": "title",
-  "image_field": "thumbnail",
   "search_fields": "title,slug,category",
   "description": "A fixed-price service package published by a provider, shown by card-service.php, services.php, and service-detail.php. 'rating'/'reviews_count'/'delivery_days' were already removed from the live UI in a prior pass and are intentionally not modeled.",
   "fields": [
@@ -79,11 +78,6 @@
       "fieldname": "section_break_content",
       "fieldtype": "Section Break",
       "label": "Content"
-    },
-    {
-      "fieldname": "thumbnail",
-      "fieldtype": "Attach Image",
-      "label": "Thumbnail"
     },
     {
       "fieldname": "description",

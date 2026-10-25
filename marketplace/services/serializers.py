@@ -38,7 +38,6 @@ SERVICE_LIST_FIELDS = [
 	"price",
 	"currency",
 	"price_unit",
-	"thumbnail",
 	"description",
 ]
 SERVICE_DETAIL_EXTRA_FIELDS: list[str] = []

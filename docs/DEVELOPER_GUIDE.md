@@ -171,7 +171,7 @@ Notes:
 
 **Profile fields** (list): `name, display_name, slug, headline, profile_type, governorate, area, experience_years, avatar, bio, offers_services, accepts_projects, specialties[], is_partner`. Detail adds `case_study_title, case_study_text, qualifications[{title,issuer,year}], published_services[]`.
 
-**Service fields**: `name, title, slug, provider (profile slug), category, price, currency, price_unit (Total|Monthly|Per Session), thumbnail, description, badges[], features[]`.
+**Service fields**: `name, title, slug, provider (profile slug), category, price, currency, price_unit (Total|Monthly|Per Session), description, badges[], features[]`.
 
 **Project fields**: `name, title, slug, category, client_display_name, client_type, budget_min, budget_max, currency, deadline, escrow, published_at, description, required_skills[]`.
 

@@ -12,7 +12,7 @@ Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/
 | [Marketplace Project](#marketplace-project) | Marketplace | field:slug | No | 15 |
 | [Marketplace Proposal](#marketplace-proposal) | Marketplace | hash | No | 9 |
 | [Marketplace Qualification](#marketplace-qualification) | Marketplace |  | Yes | 3 |
-| [Marketplace Service](#marketplace-service) | Marketplace | field:slug | No | 13 |
+| [Marketplace Service](#marketplace-service) | Marketplace | field:slug | No | 12 |
 | [Marketplace Tag](#marketplace-tag) | Marketplace |  | Yes | 1 |
 
 ## Marketplace Category
@@ -222,7 +222,6 @@ A fixed-price service package published by a provider, shown by card-service.php
 | `currency` | Currency | Data |  | ✓ |  | ج.م |  |  |  |
 | `price_unit` | Price Unit | Select | Total, Monthly, Per Session | ✓ |  | Total |  |  |  |
 | _Content_ (Section Break) | | | | | | | | | |
-| `thumbnail` | Thumbnail | Attach Image |  |  |  |  |  |  |  |
 | `description` | Description | Text Editor |  |  |  |  |  |  |  |
 | `badges` | Badges | Table | Marketplace Tag |  |  |  |  |  |  |
 | `features` | Features | Table | Marketplace Tag |  |  |  |  |  |  |
