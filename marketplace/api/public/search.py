@@ -17,6 +17,7 @@ import frappe
 from frappe.utils import sbool
 
 from marketplace.api.common import ok
+from marketplace.services import events
 from marketplace.services.filters import clamp_page, clamp_page_size
 from marketplace.services.intent_router import classify
 from marketplace.services.search_service import search as run_search
@@ -49,6 +50,8 @@ def search(
 	result = run_search(query, entity_types, filters, page, page_size)
 
 	meta = {"query": query, "entity_types": result["entity_types"], "applied_filters": result["applied_filters"]}
+	shown = [(r["entity_type"], r.get("name") or r.get("slug")) for r in result["results"]]
+	meta.update(events.search_meta(query, result["entity_types"], shown, result["total"], page))
 	if intent is not None:
 		meta["intent_matched"] = intent["matched"]
 	return ok(result["results"], page=page, page_size=page_size, total=result["total"], meta=meta)

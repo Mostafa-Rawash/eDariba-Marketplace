@@ -1,12 +1,12 @@
 import frappe
 from frappe import _
-from frappe.model.document import Document
 from frappe.utils import now_datetime
 
 from marketplace.marketplace.permissions import is_moderator
+from marketplace.services.privacy import IdentityMaskedDocument
 
 
-class MarketplaceService(Document):
+class MarketplaceService(IdentityMaskedDocument):
 	def validate(self):
 		self.slug = (self.slug or "").strip().lower()
 		if not self.slug:

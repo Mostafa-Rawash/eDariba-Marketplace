@@ -31,8 +31,16 @@ def _build_metadata() -> dict:
 		order_by="sort_order asc",
 		ignore_permissions=True,
 	)
+	specialties = frappe.get_all(
+		"Marketplace Specialty",
+		filters={"is_active": 1},
+		fields=["title", "category"],
+		order_by="sort_order asc, title asc",
+		ignore_permissions=True,
+	)
 	return {
 		"categories": categories,
+		"specialties": specialties,
 		"governorates": _select_options("Marketplace Profile", "governorate"),
 		"client_types": _select_options("Marketplace Project", "client_type"),
 		"price_units": _select_options("Marketplace Service", "price_unit"),
@@ -50,5 +58,5 @@ def get_metadata():
 
 
 def clear_cache(doc=None, method=None):
-	"""doc_events hook target (Marketplace Category on_update/on_trash)."""
+	"""doc_events hook target (Marketplace Category / Specialty on_update/on_trash)."""
 	frappe.cache().delete_value(CACHE_KEY)

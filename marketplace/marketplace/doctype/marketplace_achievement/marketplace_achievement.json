@@ -1,0 +1,80 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Achievement",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "field:code",
+  "track_changes": 0,
+  "engine": "InnoDB",
+  "description": "Achievement definitions: reached when the user's metric (services/gamification_rules.METRICS) is at least threshold. Evaluated on the server (services/gamification.py).",
+  "fields": [
+    {
+      "fieldname": "code",
+      "fieldtype": "Data",
+      "label": "Code",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Small Text",
+      "label": "Description"
+    },
+    {
+      "fieldname": "metric",
+      "fieldtype": "Select",
+      "label": "Metric",
+      "reqd": 1,
+      "in_list_view": 1,
+      "options": "profile_complete\nservices_published\nrequests_responded\nrequests_completed\nproposals_accepted\npoints_total"
+    },
+    {
+      "fieldname": "threshold",
+      "fieldtype": "Int",
+      "label": "Threshold",
+      "reqd": 1,
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "is_active",
+      "fieldtype": "Check",
+      "label": "Is Active",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sort_order",
+      "fieldtype": "Int",
+      "label": "Sort Order",
+      "default": "0"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0
+    }
+  ],
+  "naming_rule": "By fieldname"
+}

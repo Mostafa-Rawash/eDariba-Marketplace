@@ -61,6 +61,13 @@
       "description": "Used to build the public profile URL (edariba_mp_url('accountant', $acc['slug']))."
     },
     {
+      "fieldname": "previous_slugs",
+      "fieldtype": "Small Text",
+      "label": "Previous Slugs",
+      "read_only": 1,
+      "description": "Handles this profile had before, one per line, oldest first. Set when the owner's username changes (services/profile_handle.py); old public links resolve through them and redirect to the current slug."
+    },
+    {
       "fieldname": "headline",
       "fieldtype": "Data",
       "label": "Headline",
@@ -172,11 +179,25 @@
       "fieldname": "verification_status",
       "fieldtype": "Select",
       "options": "Pending\nVerified\nRejected",
-      "default": "Pending",
+      "default": "Verified",
       "label": "Verification Status",
       "in_list_view": 1,
       "in_standard_filter": 1,
-      "description": "Moderation decision. Only a moderator can change it (controller guard). A profile must be Verified before it can be published. Permlevel 0 so the owner can read their own status; Guests only ever see Published (so Verified) profiles."
+      "description": "Verified by default while verification is bypassed (services/verification.py); Pending profiles are verified on save. Only a moderator can change it by hand (controller guard). Permlevel 0 so the owner can read their own status."
+    },
+    {
+      "fieldname": "verification_method",
+      "fieldtype": "Select",
+      "label": "Verification Method",
+      "options": "\nAutomatic\nModerator",
+      "read_only": 1,
+      "description": "Automatic: verified by default while verification is bypassed. Moderator: set by a moderator. Lets a future workflow send Automatic ones back to Pending."
+    },
+    {
+      "fieldname": "verified_at",
+      "fieldtype": "Datetime",
+      "label": "Verified At",
+      "read_only": 1
     },
     {
       "fieldname": "column_break_status",
@@ -211,13 +232,6 @@
       "read": 1,
       "write": 1,
       "create": 1,
-      "delete": 0
-    },
-    {
-      "role": "Guest",
-      "read": 1,
-      "write": 0,
-      "create": 0,
       "delete": 0
     },
     {

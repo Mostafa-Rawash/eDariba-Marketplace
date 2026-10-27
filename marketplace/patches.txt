@@ -3,3 +3,7 @@
 
 [post_model_sync]
 # Patches added here run after the schema is synced.
+marketplace.patches.seed_marketplace_specialties
+marketplace.patches.verify_profiles_by_default
+marketplace.patches.backfill_inquiry_lifecycle
+marketplace.patches.seed_marketplace_achievements

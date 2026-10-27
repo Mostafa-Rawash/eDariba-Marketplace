@@ -8,7 +8,7 @@ Routes:
 import frappe
 
 from marketplace.api.common import ok
-from marketplace.services import repository
+from marketplace.services import events, repository
 from marketplace.services.filters import (
 	PROJECT_SORT_FIELDS,
 	clamp_page,
@@ -52,7 +52,9 @@ def list_projects(
 
 	rows, total = repository.list_projects(filters, order_by, page, page_size, repository.text_search(q, ["title"]))
 
-	return ok(rows, page=page, page_size=page_size, total=total, meta={"q": q, "category": category, "skills": skills})
+	meta = {"q": q, "category": category, "skills": skills}
+	meta.update(events.search_meta(q, ["project"], [("project", r["name"]) for r in rows], total, page))
+	return ok(rows, page=page, page_size=page_size, total=total, meta=meta)
 
 
 @frappe.whitelist(allow_guest=True)

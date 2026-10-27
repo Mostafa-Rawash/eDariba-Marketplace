@@ -115,13 +115,21 @@ def list_profiles(filters: dict, order_by: str, page: int, page_size: int, or_fi
 
 
 def get_profile_by_slug(slug: str):
-	name = frappe.db.get_value(
-		"Marketplace Profile", {"slug": slug, "publication_status": "Published"}, "name"
-	)
+	"""Also finds a profile by a slug it had before its owner changed username;
+	the result carries the current slug, so callers can redirect old links."""
+	from marketplace.services.profile_handle import owner_of_slug
+
+	name = owner_of_slug(slug)
+	if name and frappe.db.get_value("Marketplace Profile", name, "publication_status") != "Published":
+		name = None
 	if not name:
 		frappe.throw("Profile not found.", frappe.DoesNotExistError)
 	doc = frappe.get_doc("Marketplace Profile", name)
 	return serialize_profile(doc, detail=True)
+
+
+def count_published_services(provider_name: str) -> int:
+	return frappe.db.count("Marketplace Service", {"provider": provider_name, "publication_status": "Published"})
 
 
 def published_services_for_provider(provider_name: str, limit: int = 20):

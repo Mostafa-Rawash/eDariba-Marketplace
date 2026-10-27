@@ -27,7 +27,7 @@ from frappe import _
 from frappe.utils import add_to_date, now_datetime
 
 from marketplace.api.common import ok
-from marketplace.services import request_rules
+from marketplace.services import profile_handle, request_rules
 from marketplace.services.filters import clamp_page, clamp_page_size
 
 # Per logged-in user, counted from the requests table itself, so it cannot be
@@ -105,6 +105,9 @@ def submit_request(
 	# pass before either insert.
 	account = frappe.db.get_value("User", user, ["full_name", "email", "mobile_no"], as_dict=True, for_update=True)
 
+	# A request link shared before the accountant changed username carries the
+	# old slug; store the profile's current name.
+	recipient = profile_handle.owner_of_slug(recipient) or recipient
 	profile = frappe.db.get_value(
 		"Marketplace Profile",
 		recipient,
@@ -236,5 +239,15 @@ def set_request_status(name: str, status: str):
 		frappe.throw(_("This status change is not allowed."), frappe.PermissionError)
 
 	doc.status = status
+	if status == "Closed" and not doc.closed_by:
+		doc.closed_by = actor
 	doc.save(ignore_permissions=True)
 	return ok(_serialize(doc, actor))
+
+
+@frappe.whitelist(methods=["POST"])
+def sync_profile_link():
+	"""Make the caller's public profile link match their username (the link
+	follows the username, see services/profile_handle.py). Only renames the
+	caller's own profile. Returns {"slug": current slug or null}."""
+	return ok({"slug": profile_handle.sync_my_profile_link(_user())})

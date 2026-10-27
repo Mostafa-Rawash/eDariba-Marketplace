@@ -13,10 +13,13 @@ halves — the query condition keeps unpublished rows out of list results, and
 has_permission blocks a guest from loading an unpublished doc by guessing its
 name directly.
 
-These hooks only ever narrow what a DocPerm already allows. Since 2026-10-20
-normal users hold no DocPerm on any Marketplace DocType (only Guest read on
-the public ones, plus Marketplace Moderator and System Manager), so they can
-never write through /api/resource; their writes go through api/workspace.py.
+These hooks only ever narrow what a DocPerm already allows. The app's users
+hold "Invoicing Owner", which has DocPerms on Profile, Service and Project
+(commit e6a950a) and create-only on Proposal; these hooks and the controllers
+keep them to their own records. Requests and proposal status changes go
+through api/workspace.py and api/proposals.py. Guest has no DocPerm on
+Profile, Service or Project since 2026-10-26 (public reads use api/public/*),
+so the Guest branches below only matter for future DocTypes.
 """
 
 import frappe

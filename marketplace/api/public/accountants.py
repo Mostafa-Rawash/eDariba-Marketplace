@@ -8,7 +8,7 @@ Routes (once this app is installed on the real site):
 import frappe
 
 from marketplace.api.common import ok
-from marketplace.services import repository
+from marketplace.services import events, repository
 from marketplace.services.filters import (
 	ACCOUNTANT_SORT_FIELDS,
 	clamp_page,
@@ -46,11 +46,22 @@ def list_accountants(
 	or_filters = repository.text_search(q, ["display_name", "headline"])
 	rows, total = repository.list_profiles(filters, order_by, page, page_size, or_filters)
 
-	return ok(rows, page=page, page_size=page_size, total=total, meta={"q": q, "specialty": specialty, "governorate": governorate})
+	meta = {"q": q, "specialty": specialty, "governorate": governorate}
+	meta.update(events.search_meta(q, ["accountant"], [("accountant", r["name"]) for r in rows], total, page))
+	return ok(rows, page=page, page_size=page_size, total=total, meta=meta)
+
+
+SERVICES_SHOWN = 20
 
 
 @frappe.whitelist(allow_guest=True)
 def get_accountant(slug: str):
 	profile = repository.get_profile_by_slug(slug)
-	profile["published_services"] = repository.published_services_for_provider(profile["name"])
+	services = repository.published_services_for_provider(profile["name"], limit=SERVICES_SHOWN)
+	profile["published_services"] = services
+	# published_services is the first page; the count shown on the profile
+	# must use this total, which is only counted when the page is full.
+	profile["published_services_total"] = (
+		repository.count_published_services(profile["name"]) if len(services) == SERVICES_SHOWN else len(services)
+	)
 	return ok(profile)

@@ -18,6 +18,10 @@ REQUESTER = "requester"
 STATUSES = ("New", "Responded", "Accepted", "Declined", "Closed", "Cancelled")
 OPEN_STATUSES = ("New", "Responded", "Accepted")
 RESPONDABLE_STATUSES = ("New", "Responded")
+# Moving to one of these is the provider's first answer to a request.
+ANSWER_STATUSES = ("Responded", "Accepted", "Declined")
+# Lifecycle timestamp set the first time a request reaches each status.
+TIMESTAMP_FIELDS = {"Accepted": "accepted_at", "Declined": "declined_at", "Closed": "closed_at", "Cancelled": "cancelled_at"}
 
 _TRANSITIONS = {
 	PROVIDER: {

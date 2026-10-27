@@ -93,6 +93,31 @@
       "fieldtype": "Datetime",
       "label": "Submitted At",
       "read_only": 1
+    },
+    {
+      "fieldname": "shortlisted_at",
+      "fieldtype": "Datetime",
+      "label": "Shortlisted At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "accepted_at",
+      "fieldtype": "Datetime",
+      "label": "Accepted At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "rejected_at",
+      "fieldtype": "Datetime",
+      "label": "Rejected At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "withdrawn_at",
+      "fieldtype": "Datetime",
+      "label": "Withdrawn At",
+      "read_only": 1,
+      "description": "Lifecycle timestamps: set by the server the first time the proposal reaches the status, never overwritten (services/proposal_rules.py)."
     }
   ],
   "permissions": [

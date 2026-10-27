@@ -1,46 +1,92 @@
 import frappe
 from frappe import _
-from frappe.model.document import Document
 from frappe.utils import now_datetime
 
 from marketplace.marketplace.permissions import is_moderator
+from marketplace.services import profile_completion, verification
+from marketplace.services.privacy import IdentityMaskedDocument
+
+# Set only by the server (controller, services/profile_handle.py, moderators).
+# An owner's save through /api/resource cannot change them.
+PROTECTED_FIELDS = ("user", "slug", "previous_slugs", "verification_method", "verified_at", "published_at")
 
 
-class MarketplaceProfile(Document):
+class MarketplaceProfile(IdentityMaskedDocument):
 	def validate(self):
 		self.slug = (self.slug or "").strip().lower()
 		if not self.slug:
 			frappe.throw(_("Slug is required."))
 
-		self._guard_moderation_fields()
+		self._guard_protected_fields()
+		self._apply_verification_policy()
 		self._guard_publish_transition()
+		self._check_specialties()
 
-	def _guard_moderation_fields(self):
-		"""The owner activates their own profile: Pending (not active) <->
-		Verified (active). Rejected stays a moderator decision; the owner can
-		only send a rejected profile back to Pending."""
+	def _guard_protected_fields(self):
+		if self.is_new() or is_moderator():
+			return
+		changed = [f for f in PROTECTED_FIELDS + ("company",) if self.has_value_changed(f)]
+		if changed:
+			frappe.throw(_("These fields cannot be changed: {0}").format(", ".join(changed)), frappe.PermissionError)
+
+	def _apply_verification_policy(self):
+		"""See services/verification.py: verified by default while verification
+		is bypassed; only moderators change the status by hand."""
+		required = verification.verification_required()
+		moderator = is_moderator()
 		if self.is_new():
-			if self.verification_status and self.verification_status != "Pending":
-				frappe.throw(_("New profiles always start as Pending verification."))
+			self.verification_status, self.verification_method = verification.status_for_new_profile(required)
+			self.verified_at = now_datetime() if self.verification_status == verification.VERIFIED else None
 			return
 
-		if not self.has_value_changed("verification_status") or is_moderator():
-			return
-		previous = (self.get_doc_before_save() or {}).get("verification_status")
-		owner = self.user == frappe.session.user
-		allowed = (previous, self.verification_status) in (
-			("Pending", "Verified"),
-			("Verified", "Pending"),
-			("Rejected", "Pending"),
-		)
-		if not (owner and allowed):
-			frappe.throw(_("Only a moderator can change verification status."))
+		if self.has_value_changed("verification_status"):
+			previous = self.get_doc_before_save().verification_status
+			if moderator:
+				verified = self.verification_status == verification.VERIFIED
+				self.verification_method = verification.MODERATOR if verified else None
+				self.verified_at = now_datetime() if verified else None
+			elif not verification.owner_may_change(previous, self.verification_status, required):
+				frappe.throw(_("Only a moderator can change verification status."), frappe.PermissionError)
+
+		if verification.auto_verify(self.verification_status, required):
+			self.verification_status = verification.VERIFIED
+			self.verification_method = verification.AUTOMATIC
+			self.verified_at = now_datetime()
 
 	def _guard_publish_transition(self):
 		if not self.has_value_changed("publication_status"):
 			return
 
 		if self.publication_status == "Published":
-			if not (self.bio and self.headline and self.experience_years is not None):
+			if profile_completion.publish_problems(profile_completion.profile_dict(self)):
 				frappe.throw(_("Bio, headline, and years of experience are required before publishing."))
 			self.published_at = now_datetime()
+
+	def _check_specialties(self):
+		"""Specialties are picked from Marketplace Specialty. Only newly added
+		ones are checked, so a profile keeps labels it had before the list
+		existed (or that were since deactivated) without blocking its saves."""
+		seen = set()
+		for row in list(self.specialties):
+			row.label = " ".join((row.label or "").split())
+			if not row.label or row.label in seen:
+				self.remove(row)
+				continue
+			seen.add(row.label)
+
+		before = self.get_doc_before_save()
+		kept = {row.label for row in before.specialties} if before else set()
+		added = [label for label in seen if label not in kept]
+		if not added:
+			return
+		active = set(
+			frappe.get_all(
+				"Marketplace Specialty",
+				filters={"title": ("in", added), "is_active": 1},
+				pluck="title",
+				ignore_permissions=True,
+			)
+		)
+		unknown = [label for label in added if label not in active]
+		if unknown:
+			frappe.throw(_("Choose specialties from the list: {0}").format("، ".join(unknown)))

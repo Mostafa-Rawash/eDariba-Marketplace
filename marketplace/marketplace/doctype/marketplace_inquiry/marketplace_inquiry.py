@@ -3,7 +3,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime, validate_email_address
 
-from marketplace.services import notifications
+from marketplace.services import gamification, notifications, request_rules
+
+LIFECYCLE_FIELDS = ("first_responded_at", "closed_by", *request_rules.TIMESTAMP_FIELDS.values())
 
 
 class MarketplaceInquiry(Document):
@@ -19,8 +21,30 @@ class MarketplaceInquiry(Document):
 		if self.is_new():
 			self.created_at = now_datetime()
 			self.status = "New"
-		elif self.has_value_changed("requester"):
+			return
+		if self.has_value_changed("requester"):
 			frappe.throw(_("The requester of a request cannot be changed."))
+		self._stamp_lifecycle()
+
+	def _stamp_lifecycle(self):
+		"""Lifecycle timestamps for the statistics (services/stats.py). Each is
+		set the first time and never overwritten, whoever saves the request."""
+		before = self.get_doc_before_save()
+		for field in LIFECYCLE_FIELDS:
+			if before.get(field) and self.get(field) != before.get(field):
+				self.set(field, before.get(field))
+
+		now = now_datetime()
+		if self.has_value_changed("status"):
+			field = request_rules.TIMESTAMP_FIELDS.get(self.status)
+			if field and not self.get(field):
+				self.set(field, now)
+		# The provider's first answer: their first reply, or accepting or
+		# declining without one. Editing the reply later changes responded_at only.
+		replied = self.has_value_changed("response") and bool(self.response)
+		decided = self.has_value_changed("status") and self.status in request_rules.ANSWER_STATUSES
+		if (replied or decided) and not self.first_responded_at:
+			self.first_responded_at = now
 
 	def after_insert(self):
 		notifications.notify_new_request(self)
@@ -29,6 +53,7 @@ class MarketplaceInquiry(Document):
 		# get_doc_before_save() is None on insert; after_insert covers that case.
 		if self.get_doc_before_save() is None:
 			return
+		gamification.on_request_update(self)
 		if self.has_value_changed("status"):
 			event = self.status
 		elif self.has_value_changed("response"):

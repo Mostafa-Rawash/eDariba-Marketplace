@@ -1,21 +1,32 @@
 import frappe
 from frappe import _
-from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime, today
 
 from marketplace.marketplace.permissions import is_moderator
+from marketplace.services.privacy import IdentityMaskedDocument
 
 
-class MarketplaceProject(Document):
+class MarketplaceProject(IdentityMaskedDocument):
 	def validate(self):
 		self.slug = (self.slug or "").strip().lower()
 		if not self.slug:
 			frappe.throw(_("Slug is required."))
 
 		self._guard_ownership()
+		self._guard_hire_fields()
 		self._guard_budget()
 		self._guard_deadline()
 		self._guard_publish_transition()
+		if self.publication_status == "Closed" and not self.closed_at:
+			self.closed_at = now_datetime()
+
+	def _guard_hire_fields(self):
+		"""accepted_proposal and closed_at are set by the server
+		(api/proposals.py, the line above), never by the client's own save."""
+		if self.is_new() or self.flags.hire_via_api or is_moderator():
+			return
+		if self.has_value_changed("accepted_proposal") or self.has_value_changed("closed_at"):
+			frappe.throw(_("These fields cannot be changed: accepted_proposal, closed_at"), frappe.PermissionError)
 
 	def _guard_ownership(self):
 		if frappe.session.user == "Administrator" or is_moderator():

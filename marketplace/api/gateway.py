@@ -1,7 +1,8 @@
 """Single-endpoint gateway for WordPress, per explicit request (2026-10-15):
-one URL instead of several separate whitelisted methods. Read-only: every
-write by a person happens in the logged-in app (api/workspace.py), never
-through WordPress.
+one URL instead of several separate whitelisted methods. Read-only except
+for event/track (page views and search clicks, checked and deduped by the
+server in api/public/events.py): every write by a person happens in the
+logged-in app (api/workspace.py), never through WordPress.
 
 Route:
   POST /api/method/marketplace.api.gateway.request
@@ -23,8 +24,12 @@ import inspect
 import frappe
 
 from marketplace.api.public import accountants, metadata, projects, search, services
+from marketplace.api.public import events as event_api
 
 _DISPATCH = {
+	# The one write the gateway forwards: activity reporting. It records
+	# nothing the server does not check itself (api/public/events.py).
+	("event", "track"): event_api.record,
 	("accountant", "list"): accountants.list_accountants,
 	("accountant", "get"): accountants.get_accountant,
 	("service", "list"): services.list_services,

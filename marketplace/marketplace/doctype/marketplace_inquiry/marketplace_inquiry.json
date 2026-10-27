@@ -120,6 +120,44 @@
       "fieldtype": "Datetime",
       "label": "Responded At",
       "read_only": 1
+    },
+    {
+      "fieldname": "first_responded_at",
+      "fieldtype": "Datetime",
+      "label": "First Responded At",
+      "read_only": 1,
+      "description": "When the provider first answered (first reply, or first Accept/Decline). Set once by the server and never overwritten; responded_at keeps the time of the latest reply."
+    },
+    {
+      "fieldname": "accepted_at",
+      "fieldtype": "Datetime",
+      "label": "Accepted At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "declined_at",
+      "fieldtype": "Datetime",
+      "label": "Declined At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "closed_at",
+      "fieldtype": "Datetime",
+      "label": "Closed At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cancelled_at",
+      "fieldtype": "Datetime",
+      "label": "Cancelled At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "closed_by",
+      "fieldtype": "Select",
+      "options": "\nrequester\nprovider",
+      "label": "Closed By",
+      "read_only": 1
     }
   ],
   "permissions": [

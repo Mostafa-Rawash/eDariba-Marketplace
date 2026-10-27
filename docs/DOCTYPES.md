@@ -2,7 +2,7 @@
 
 Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/` by `scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.
 
-8 DocTypes.
+9 DocTypes.
 
 | DocType | Module | Naming | Child table | Fields |
 |---|---|---|---|---|
@@ -13,6 +13,7 @@ Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/
 | [Marketplace Proposal](#marketplace-proposal) | Marketplace | hash | No | 9 |
 | [Marketplace Qualification](#marketplace-qualification) | Marketplace |  | Yes | 3 |
 | [Marketplace Service](#marketplace-service) | Marketplace | field:slug | No | 12 |
+| [Marketplace Specialty](#marketplace-specialty) | Marketplace | field:title | No | 4 |
 | [Marketplace Tag](#marketplace-tag) | Marketplace |  | Yes | 1 |
 
 ## Marketplace Category
@@ -237,6 +238,30 @@ A fixed-price service package published by a provider, shown by card-service.php
 | Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
 | Guest | 0 | ✓ |  |  |  |  |
 | Invoicing Owner | 0 | ✓ | ✓ | ✓ | ✓ |  |
+
+## Marketplace Specialty
+
+The list accountants pick their specialties from on their profile («التخصصات الدقيقة»). A profile stores the chosen titles in its specialties table (Marketplace Tag.label), so search and the WordPress site read them as before. Each specialty may belong to a Marketplace Category, which the app uses to group the list.
+
+- **Module:** `Marketplace`
+- **Naming:** `field:title`
+- **Track changes:** `Yes`
+- **Sort:** `sort_order ASC`
+
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `title` | Title | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `category` | Category | Link | Marketplace Category |  |  |  | ✓ |  |  |
+| `is_active` | Is Active | Check |  |  |  | 1 | ✓ |  |  |
+| `sort_order` | Sort Order | Int |  |  |  | 0 |  |  |  |
+
+**Permissions**
+
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ | ✓ | ✓ |  |  |
+| Guest | 0 | ✓ |  |  |  |  |
 
 ## Marketplace Tag
 

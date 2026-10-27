@@ -1,0 +1,86 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Points Entry",
+  "module": "Marketplace",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "hash",
+  "track_changes": 0,
+  "engine": "InnoDB",
+  "description": "Append-only points ledger (services/gamification.py). Points are awarded only by the server for events it verifies; idempotency_key makes each award happen once. Entries are never edited: a correction is a new entry by a System Manager.",
+  "fields": [
+    {
+      "fieldname": "user",
+      "fieldtype": "Link",
+      "label": "User",
+      "options": "User",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "points",
+      "fieldtype": "Int",
+      "label": "Points",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "event_type",
+      "fieldtype": "Data",
+      "label": "Event Type",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "reference_doctype",
+      "fieldtype": "Link",
+      "label": "Reference DocType",
+      "options": "DocType"
+    },
+    {
+      "fieldname": "reference_name",
+      "fieldtype": "Dynamic Link",
+      "label": "Reference Name",
+      "options": "reference_doctype"
+    },
+    {
+      "fieldname": "idempotency_key",
+      "fieldtype": "Data",
+      "label": "Idempotency Key",
+      "unique": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "awarded_at",
+      "fieldtype": "Datetime",
+      "label": "Awarded At",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "note",
+      "fieldtype": "Small Text",
+      "label": "Note"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 1,
+      "delete": 0
+    },
+    {
+      "role": "Marketplace Moderator",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}
