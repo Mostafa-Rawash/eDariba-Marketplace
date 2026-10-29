@@ -1,5 +1,5 @@
-<!-- Request update, to whichever side did not make the change. Sent by services/notifications.py:notify_update.
-     Args: actor_name (who made the change), event (new status, or "ReplyUpdated"), url.
+<!-- Request update, to whichever side did not make the change. Sent by inquiries/notifications.py (notify_update, notify_support_update).
+     Args: actor_name (who made the change), event (new status, "ReplyUpdated" or "SupportUpdate"), url.
      Inline styles only (email clients drop <style>). Link only; the details are shown in the app after login. -->
 {%- set event_label = {
 	"Responded": "ردّ على طلبك",
@@ -8,6 +8,7 @@
 	"Declined": "اعتذر عن طلبك",
 	"Cancelled": "ألغى الطلب",
 	"Closed": "أغلق الطلب",
+	"SupportUpdate": "حدّث حالة الطلب",
 }.get(event, "حدّث الطلب") -%}
 <table role="presentation" dir="rtl" width="100%" border="0" cellpadding="0" cellspacing="0"
 	style="max-width:560px; margin:0 auto; direction:rtl; text-align:right; font-family:'Tajawal','IBM Plex Sans Arabic',system-ui,sans-serif; color:#11110D;">

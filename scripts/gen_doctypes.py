@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-DOCTYPE_DIR = sys.argv[1] if len(sys.argv) > 1 else "marketplace/marketplace/doctype"
+DOCTYPE_DIR = sys.argv[1] if len(sys.argv) > 1 else "marketplace/*/doctype"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "docs/DOCTYPES.md"
 
 BREAKS = {"Section Break", "Column Break", "Tab Break"}
@@ -83,7 +83,7 @@ def main():
 	lines = [
 		"# Marketplace DocTypes",
 		"",
-		"Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/` by "
+		"Generated from the DocType JSON definitions in `marketplace/<module>/doctype/` by "
 		"`scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.",
 		"",
 		f"{len(docs)} DocTypes.",

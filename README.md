@@ -14,6 +14,11 @@ theme templates (`plugins/edariba-marketplace/includes/class-dummy-data-provider
 
 ## Layout
 
+The app is split into domain modules (2026-10-29). Each module owns its
+DocTypes, rules, services and endpoints; `hooks.py` is the only place they are
+wired together. A module reads another module's data or calls its public
+functions, but never writes another module's DocTypes.
+
 ```
 pyproject.toml            packaging (bench get-app / pip install -e)
 docs/                     DEVELOPER_GUIDE.md, INTEGRATION_AUDIT.md, DOCTYPES.md, STITCH_UI_PROMPTS.md
@@ -21,18 +26,63 @@ postman/                  every endpoint with example requests
 marketplace/
   hooks.py  patches.txt  modules.txt
   fixtures/role.json      the Marketplace Moderator role
-  marketplace/doctype/    8 DocTypes: Profile, Service, Project, Proposal,
-                          Inquiry (a "request"), Category, Tag, Qualification
-  marketplace/permissions.py   row-level read rules
-  api/public/             Guest, read-only: accountants, services, projects,
-                          metadata, search
-  api/gateway.py          one read-only URL for WordPress
-  api/workspace.py        logged-in request flow for app.edariba.com
-  services/               repository, serializers, filters, Qdrant/embedding
-                          clients, indexing, intent router, request rules,
-                          partner badge, notifications
+
+  marketplace/            Frappe module "Marketplace": the directory core
+    doctype/              Profile, Service, Category, Tag, Qualification, Specialty
+    permissions.py        row-level rules for Profile and Service
+    repository.py  serializers.py  partner.py  privacy.py
+    profile_handle.py  profile_completion.py  verification.py
+    public_api/           Guest reads: accountants, services, metadata
+  inquiries/              Frappe module "Inquiries": client -> accountant requests
+    doctype/              Inquiry
+    permissions.py  rules.py (status table)  notifications.py (emails)
+    api.py                logged-in request flow (was api/workspace.py)
+  freelance/              Frappe module "Freelance": projects and proposals
+    doctype/              Project, Proposal
+    permissions.py  rules.py (proposal status table)
+    api.py                proposal actions;  public_api.py  Guest project reads
+  activity/               Frappe module "Activity": views, searches, clicks
+    doctype/              Activity (raw, 90 days), Daily Metric
+    rules.py  events.py   public_api.py  the tracking endpoint
+  gamification/           Frappe module "Gamification": points and achievements
+    doctype/              Points Entry (ledger), Achievement, User Achievement
+    rules.py  service.py  api.py (my_points, my_achievements)
+  search/                 no DocTypes: Qdrant + embedding clients, indexing,
+                          intent router, semantic search;  public_api.py
+  stats/                  no DocTypes: provider/admin read models;  api.py
+  shared/                 responses.py (envelope), filters.py, permissions.py
+                          (is_moderator, published_condition)
+  api/                    the published URLs, kept stable: gateway.py (WordPress)
+                          plus re-exports of every endpoint that used to live here
+  patches/                data patches (split_domain_modules moves the DocTypes)
   templates/emails/       request emails (Arabic, RTL)
 ```
+
+**Dependency rules.**
+
+- `shared/` depends on nothing in the app.
+- The `marketplace/` core logic depends only on `shared/`, with two
+  exceptions:
+  - one lazy call into `search/` re-indexes a profile when its handle changes;
+  - its public list endpoints log searches through `activity.events`.
+- Every other module may read the core.
+- `stats/` only reads, from every module.
+- `search/` and `gamification/` react to other modules' records through
+  `doc_events` in `hooks.py`. The owners never import them, so either can be
+  switched off or moved into its own app without touching them.
+
+**URLs did not change.** Clients keep calling `marketplace.api.gateway.request`,
+`marketplace.api.workspace.*`, `marketplace.api.public.*`, and so on. Those
+modules re-export the functions from their new homes, and Frappe resolves
+both paths to the same whitelisted function. New endpoints go in their module
+and get a re-export in `api/` only if a client needs a stable path. The one
+exception is the manual admin sweep, which is now
+`marketplace.search.indexing_service.reconcile`; the Postman collection is
+updated.
+
+**Migrating a site.** The pre-model-sync patch `split_domain_modules`
+creates the four Module Defs and points the moved DocTypes at their new
+modules before the schema sync. Tables and data don't change.
 
 ## Design decisions (agreed 2026-10-20)
 
@@ -42,31 +92,63 @@ marketplace/
   `accepts_projects` (sends proposals on posted projects). Any logged-in user
   can send a request. Workspace roles (Owner / Member / reseller) stay in
   `accounting` and are untouched; one person can hold any mix of both.
-- **Only one role is added:** `Marketplace Moderator` (fixture), for staff who
-  verify profiles in Desk. Normal users hold no DocPerm on any Marketplace
+- **Only one role is added:** `Marketplace Moderator` (fixture), for the
+  sales and customer-support team (see "Roles" below). Normal users hold no DocPerm on any Marketplace
   DocType, so `/api/resource` is closed to them; every write goes through
-  `api/workspace.py`, which takes the user from the session and checks
+  `inquiries/api.py`, which takes the user from the session and checks
   ownership itself.
 - **Public reads stay open for SEO, private fields are hidden.** Guest keeps
   read on published Profiles, Services and Projects, but the fields that
   identify a person sit at permlevel 1, which Guests never receive (in
   `/api/resource` lists or single reads): Profile `user` and
-  `verification_status`, Project `client`. Only System Manager and
-  Marketplace Moderator have level-1 access. The public API serializers never
+  `verification_status`, Project `client`. Only System Manager
+  (read and write) and Marketplace Moderator (read) have level-1 access. The public API serializers never
   returned these fields anyway.
 - **Requests need login** (J3). The old guest `inquiry.submit_inquiry`
   endpoint and the Guest create permission are gone; a guest
   `POST /api/resource/Marketplace Inquiry` is refused.
-- **Anyone can apply to be listed; a moderator verifies** before a profile
-  can be published. Profiles whose owner has an active Partner (reseller)
-  plan show an `is_partner` badge (J4 = C). `services/partner.py` is the only
+- **Anyone can apply to be listed.** Verification is bypassed for now
+  (`marketplace/verification.py`); a verifier role comes with that feature. Profiles whose owner has an active Partner (reseller)
+  plan show an `is_partner` badge (J4 = C). `marketplace/partner.py` is the only
   place that reads accounting data, read-only, and returns "no badge" on any
   failure.
 - **Chat discovery is merged into search**: `search.search(auto_intent=1)`.
 - Everyone still goes through ETA onboarding in the app (J2); nothing here
   changes that.
 
-## Request flow (`api/workspace.py`)
+## Roles (2026-10-29)
+
+| Role | Who | Can |
+|---|---|---|
+| System Manager | eDariba admins | everything, including editing any listing and verification |
+| Invoicing Owner (from `accounting`) | every app user: accountants and business owners | their own records only; being a provider or a client comes from their records |
+| Marketplace Moderator | sales / customer support | read every profile, service, project, proposal and request (including contact details and the reply history); end an abandoned request or project with a reason |
+| Guest | WordPress visitors | published listings, through `marketplace.api.gateway.request` only |
+
+In code, `shared/permissions.py` keeps the two questions apart:
+`is_moderator()` (may see everything: System Manager and Moderator) and
+`can_edit_any()` (may change records they don't own: System Manager only).
+
+Support never edits the request text or the reply. It never accepts or
+responds. Its actions:
+
+- `support_set_request_status(name, status, reason)` (`inquiries/api.py`):
+  - New/Responded → Declined, when the accountant disappeared;
+  - New/Responded → Cancelled, when the client disappeared or the request
+    was wrong;
+  - Accepted → Closed.
+
+  The reason (10–500 characters) is stored in `support_note` and logged as a
+  comment, and both parties are emailed. A support decline does not count
+  as the accountant's first response, and a support close earns no points.
+- `support_close_project(name, reason)` (`freelance/api.py`): closes a
+  Published project whose client disappeared and rejects its active
+  proposals.
+- `get_request` returns `role: "support"` to staff, with both sides'
+  contact details and `reply_history` (every version of the reply, from
+  Frappe's Version log).
+
+## Request flow (`inquiries/api.py`, URL `marketplace.api.workspace.*`)
 
 | Function | Who | What |
 |---|---|---|
@@ -74,7 +156,7 @@ marketplace/
 | `list_requests(box="sent"\|"received", status?, page?)` | both | Requests you sent / requests to your profile |
 | `get_request(name)` | both | Detail, your `role`, `next_statuses`, `can_respond`. Non-parties get "not found". |
 | `respond_request(name, message)` | provider | Writes or edits the reply, sets Responded, emails the client each time |
-| `set_request_status(name, status)` | both | Per `services/request_rules.py` |
+| `set_request_status(name, status)` | both | Per `inquiries/rules.py` |
 
 Statuses: `New → Responded → Accepted → Closed`; the provider can Decline
 while New/Responded; the requester can Cancel while New/Responded; either
@@ -103,7 +185,7 @@ unrelated records. On 2026-10-20 none of those held marketplace data
 (`services` and `projects` were empty); the app no longer uses them, and they
 can be deleted once nobody else needs them.
 
-Config: `services/config.py:qdrant_collection_for(entity_type)`,
+Config: `search/config.py:qdrant_collection_for(entity_type)`,
 overridable via `QDRANT_COLLECTION_ACCOUNTANTS` / `_SERVICES` / `_PROJECTS`.
 
 A "unified" search across multiple entity types is a fan-out — one Qdrant
@@ -123,7 +205,10 @@ A "unified" search across multiple entity types is a fan-out — one Qdrant
   (`400 not a valid point ID`); `indexing_service._point_id` now uses a
   deterministic `uuid5(doctype:name)`.
 - Unit tests that need no Frappe (run from the repo root):
-  `python -m unittest marketplace.services.tests.test_intent_router marketplace.services.tests.test_request_rules`
+  `python -m unittest discover -s marketplace -t . -p "test_*rules.py"` plus
+  `marketplace.search.tests.test_intent_router`, `marketplace.stats.tests.test_stats_formulas`,
+  `marketplace.marketplace.tests.test_profile_completion`, `marketplace.marketplace.tests.test_verification`,
+  `marketplace.inquiries.tests.test_inquiry_backfill` (71 tests, no Frappe needed)
 
 ## Not verified (no bench here)
 
@@ -135,7 +220,7 @@ a real database.
 ## Known gaps
 
 - No self-service profile/service editing yet (Phase B: `get/save_my_profile`,
-  `list/save_my_service`). Until then a moderator creates profiles in Desk.
+  `list/save_my_service`). Until then a System Manager creates profiles in Desk.
 - The partner badge is shown but does not rank partners higher yet.
 - Project and Proposal have no app API yet; they are reachable only in Desk.
 - `filters.category` from `auto_intent` is reported in `meta` but not applied
@@ -200,7 +285,7 @@ for c in marketplace_accountants marketplace_services marketplace_projects; do
 done
 ```
 
-Then give staff the **Marketplace Moderator** role in Desk.
+Then give the sales / customer-support team the **Marketplace Moderator** role in Desk.
 
 **Check after deploy**
 - `GET https://server.edariba.com/api/method/marketplace.api.public.metadata.get_metadata` → `success: true`.

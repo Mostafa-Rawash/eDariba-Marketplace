@@ -1,20 +1,78 @@
 # Marketplace DocTypes
 
-Generated from the DocType JSON definitions in `marketplace/marketplace/doctype/` by `scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.
+Generated from the DocType JSON definitions in `marketplace/<module>/doctype/` by `scripts/gen_doctypes.py`. Regenerate after schema changes rather than editing by hand.
 
-9 DocTypes.
+14 DocTypes.
 
 | DocType | Module | Naming | Child table | Fields |
 |---|---|---|---|---|
+| [Marketplace Achievement](#marketplace-achievement) | Gamification | field:code | No | 7 |
+| [Marketplace Activity](#marketplace-activity) | Activity | hash | No | 12 |
 | [Marketplace Category](#marketplace-category) | Marketplace | field:slug | No | 4 |
-| [Marketplace Inquiry](#marketplace-inquiry) | Marketplace | hash | No | 12 |
-| [Marketplace Profile](#marketplace-profile) | Marketplace | field:slug | No | 20 |
-| [Marketplace Project](#marketplace-project) | Marketplace | field:slug | No | 15 |
-| [Marketplace Proposal](#marketplace-proposal) | Marketplace | hash | No | 9 |
+| [Marketplace Daily Metric](#marketplace-daily-metric) | Activity | hash | No | 6 |
+| [Marketplace Inquiry](#marketplace-inquiry) | Inquiries | hash | No | 19 |
+| [Marketplace Points Entry](#marketplace-points-entry) | Gamification | hash | No | 8 |
+| [Marketplace Profile](#marketplace-profile) | Marketplace | field:slug | No | 23 |
+| [Marketplace Project](#marketplace-project) | Freelance | field:slug | No | 18 |
+| [Marketplace Proposal](#marketplace-proposal) | Freelance | hash | No | 13 |
 | [Marketplace Qualification](#marketplace-qualification) | Marketplace |  | Yes | 3 |
 | [Marketplace Service](#marketplace-service) | Marketplace | field:slug | No | 12 |
 | [Marketplace Specialty](#marketplace-specialty) | Marketplace | field:title | No | 4 |
 | [Marketplace Tag](#marketplace-tag) | Marketplace |  | Yes | 1 |
+| [Marketplace User Achievement](#marketplace-user-achievement) | Gamification | hash | No | 4 |
+
+## Marketplace Achievement
+
+Achievement definitions: reached when the user's metric (gamification/rules.METRICS) is at least threshold. Evaluated on the server (gamification/service.py).
+
+- **Module:** `Gamification`
+- **Naming:** `field:code`
+
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `code` | Code | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `title` | Title | Data |  | ✓ |  |  | ✓ |  |  |
+| `description` | Description | Small Text |  |  |  |  |  |  |  |
+| `metric` | Metric | Select | profile_complete, services_published, requests_responded, requests_completed, proposals_accepted, points_total | ✓ |  |  | ✓ |  |  |
+| `threshold` | Threshold | Int |  | ✓ |  | 1 | ✓ |  |  |
+| `is_active` | Is Active | Check |  |  |  | 1 | ✓ |  |  |
+| `sort_order` | Sort Order | Int |  |  |  | 0 |  |  |  |
+
+**Permissions**
+
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
+
+## Marketplace Activity
+
+Raw marketplace activity: unique daily profile/service views, searches and search-result clicks (activity/events.py). Visitors are stored only as a daily-rotating HMAC (visitor_hash); no IP, cookie or guest identity. Rows older than the retention period (default 90 days) are purged daily; daily totals live in Marketplace Daily Metric.
+
+- **Module:** `Activity`
+- **Naming:** `hash`
+
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `event_type` | Event Type | Select | profile_view, service_view, search, search_click | ✓ |  |  | ✓ |  |  |
+| `event_date` | Event Date | Date |  | ✓ |  |  | ✓ |  |  |
+| `occurred_at` | Occurred At | Datetime |  | ✓ |  |  |  |  |  |
+| `reference_doctype` | Reference DocType | Link | DocType |  |  |  |  |  |  |
+| `reference_name` | Reference Name | Data |  |  |  |  | ✓ |  |  |
+| `visitor_hash` | Visitor Hash | Data |  |  |  |  |  |  |  |
+| `dedupe_key` | Dedupe Key | Data |  |  | ✓ |  |  |  |  |
+| `query_text` | Query | Data |  |  |  |  |  |  |  |
+| `entity_types` | Entity Types | Data |  |  |  |  |  |  |  |
+| `result_count` | Result Count | Int |  |  |  |  |  |  |  |
+| `result_refs` | Result Refs | Small Text |  |  |  |  |  |  |  |
+| `search` | Search | Link | Marketplace Activity |  |  |  |  |  |  |
+
+**Permissions**
+
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ |  |  | ✓ |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
 
 ## Marketplace Category
 
@@ -40,11 +98,34 @@ Shared category taxonomy used to filter accountants, services, and projects. One
 | Marketplace Moderator | 0 | ✓ | ✓ | ✓ |  |  |
 | Guest | 0 | ✓ |  |  |  |  |
 
+## Marketplace Daily Metric
+
+Daily counters per metric and record (activity/events.py, upserted with SQL): profile_view, service_view (all views), search_impression, search_click (per result), search and search_no_result (site-wide, no reference). Kept after raw activity is purged.
+
+- **Module:** `Activity`
+- **Naming:** `hash`
+
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `metric_key` | Metric Key | Data |  | ✓ | ✓ |  |  |  |  |
+| `metric` | Metric | Data |  | ✓ |  |  | ✓ |  |  |
+| `metric_date` | Date | Date |  | ✓ |  |  | ✓ |  |  |
+| `reference_doctype` | Reference DocType | Link | DocType |  |  |  |  |  |  |
+| `reference_name` | Reference Name | Data |  |  |  |  | ✓ |  |  |
+| `count` | Count | Int |  |  |  | 0 | ✓ |  |  |
+
+**Permissions**
+
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ |  |  | ✓ |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
+
 ## Marketplace Inquiry
 
-A request from a logged-in client to one accountant (Marketplace Profile). Created only through marketplace.api.workspace.submit_request; users have no DocPerm on it. Fully private.
+A request from a logged-in client to one accountant (Marketplace Profile). Created only through marketplace.inquiries.api.submit_request; users have no DocPerm on it. Fully private.
 
-- **Module:** `Marketplace`
+- **Module:** `Inquiries`
 - **Naming:** `hash`
 - **Track changes:** `Yes`
 
@@ -65,13 +146,45 @@ A request from a logged-in client to one accountant (Marketplace Profile). Creat
 | _Response_ (Section Break) | | | | | | | | | |
 | `response` | Response | Small Text |  |  |  |  |  | ✓ |  |
 | `responded_at` | Responded At | Datetime |  |  |  |  |  | ✓ |  |
+| `first_responded_at` | First Responded At | Datetime |  |  |  |  |  | ✓ |  |
+| `accepted_at` | Accepted At | Datetime |  |  |  |  |  | ✓ |  |
+| `declined_at` | Declined At | Datetime |  |  |  |  |  | ✓ |  |
+| `closed_at` | Closed At | Datetime |  |  |  |  |  | ✓ |  |
+| `cancelled_at` | Cancelled At | Datetime |  |  |  |  |  | ✓ |  |
+| `closed_by` | Closed By | Select | requester, provider, support |  |  |  |  | ✓ |  |
+| `support_note` | Support Note | Small Text |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
 | Role | Level | Read | Write | Create | Delete | If owner |
 |---|---|---|---|---|---|---|
 | System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
+
+## Marketplace Points Entry
+
+Append-only points ledger (gamification/service.py). Points are awarded only by the server for events it verifies; idempotency_key makes each award happen once. Entries are never edited: a correction is a new entry by a System Manager.
+
+- **Module:** `Gamification`
+- **Naming:** `hash`
+
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `user` | User | Link | User | ✓ |  |  | ✓ |  |  |
+| `points` | Points | Int |  | ✓ |  |  | ✓ |  |  |
+| `event_type` | Event Type | Data |  | ✓ |  |  | ✓ |  |  |
+| `reference_doctype` | Reference DocType | Link | DocType |  |  |  |  |  |  |
+| `reference_name` | Reference Name | Dynamic Link | reference_doctype |  |  |  |  |  |  |
+| `idempotency_key` | Idempotency Key | Data |  | ✓ | ✓ |  |  |  |  |
+| `awarded_at` | Awarded At | Datetime |  | ✓ |  |  | ✓ |  |  |
+| `note` | Note | Small Text |  |  |  |  |  |  |  |
+
+**Permissions**
+
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ |  | ✓ |  |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
 
 ## Marketplace Profile
 
@@ -89,6 +202,7 @@ Professional profile for an accountant or accounting firm, shown by card-account
 | `profile_type` | Profile Type | Select | Individual, Firm | ✓ |  | Individual | ✓ |  |  |
 | `display_name` | Display Name | Data |  | ✓ |  |  | ✓ |  |  |
 | `slug` | Slug | Data |  | ✓ | ✓ |  | ✓ |  |  |
+| `previous_slugs` | Previous Slugs | Small Text |  |  |  |  |  | ✓ |  |
 | `headline` | Headline | Data |  | ✓ |  |  | ✓ |  |  |
 | `governorate` | Governorate | Select | القاهرة, الجيزة, الإسكندرية, الشرقية, الدقهلية | ✓ |  |  | ✓ |  |  |
 | `area` | Area / District | Data |  |  |  |  |  |  |  |
@@ -105,7 +219,9 @@ Professional profile for an accountant or accounting firm, shown by card-account
 | `offers_services` | Offers Services | Check |  |  |  | 1 |  |  |  |
 | `accepts_projects` | Accepts Projects | Check |  |  |  | 1 |  |  |  |
 | _Status_ (Section Break) | | | | | | | | | |
-| `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Pending | ✓ |  |  |
+| `verification_status` | Verification Status | Select | Pending, Verified, Rejected |  |  | Verified | ✓ |  |  |
+| `verification_method` | Verification Method | Select | Automatic, Moderator |  |  |  |  | ✓ |  |
+| `verified_at` | Verified At | Datetime |  |  |  |  |  | ✓ |  |
 | `publication_status` | Publication Status | Select | Draft, Published, Unpublished |  |  | Draft | ✓ |  |  |
 | `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |  |
 
@@ -114,17 +230,16 @@ Professional profile for an accountant or accounting firm, shown by card-account
 | Role | Level | Read | Write | Create | Delete | If owner |
 |---|---|---|---|---|---|---|
 | System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | 0 | ✓ | ✓ | ✓ |  |  |
-| Guest | 0 | ✓ |  |  |  |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
 | System Manager | 1 | ✓ | ✓ |  |  |  |
-| Marketplace Moderator | 1 | ✓ | ✓ |  |  |  |
+| Marketplace Moderator | 1 | ✓ |  |  |  |  |
 | Invoicing Owner | 0 | ✓ | ✓ | ✓ |  |  |
 
 ## Marketplace Project
 
 A freelance project posted by a client, shown by card-project.php, project-detail.php, and the projects.php catalog. 'proposals_count' was already removed from the live UI in a prior pass (it is now derived by counting Marketplace Proposal rows, not stored).
 
-- **Module:** `Marketplace`
+- **Module:** `Freelance`
 - **Naming:** `field:slug`
 - **Title field:** `title`
 - **Track changes:** `Yes`
@@ -149,23 +264,25 @@ A freelance project posted by a client, shown by card-project.php, project-detai
 | _Status_ (Section Break) | | | | | | | | | |
 | `publication_status` | Publication Status | Select | Draft, Published, Closed, Archived |  |  | Draft | ✓ |  |  |
 | `published_at` | Published At | Datetime |  |  |  |  |  | ✓ |  |
+| `closed_at` | Closed At | Datetime |  |  |  |  |  | ✓ |  |
+| `accepted_proposal` | Accepted Proposal | Link | Marketplace Proposal |  |  |  |  | ✓ |  |
+| `support_note` | Support Note | Small Text |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
 | Role | Level | Read | Write | Create | Delete | If owner |
 |---|---|---|---|---|---|---|
 | System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
-| Guest | 0 | ✓ |  |  |  |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
 | System Manager | 1 | ✓ | ✓ |  |  |  |
-| Marketplace Moderator | 1 | ✓ | ✓ |  |  |  |
+| Marketplace Moderator | 1 | ✓ |  |  |  |  |
 | Invoicing Owner | 0 | ✓ | ✓ | ✓ |  |  |
 
 ## Marketplace Proposal
 
 ASSUMPTION / NOT YET IN THE WORDPRESS UI: project-detail.php's 'تقديم عرض على المشروع' button is an honest demo redirect to app.edariba with no proposal form on the public site today (data-edariba-demo-action). This DocType is still required because the product brief explicitly states freelancers submit proposals to projects (Mostaql-style) as one of the three core offerings, and app.edariba (not WordPress) is where that authenticated flow lives. Field set below is the minimum any such flow needs; confirm against the actual app.edariba form before building UI on top of it. Fully private: no Guest access anywhere.
 
-- **Module:** `Marketplace`
+- **Module:** `Freelance`
 - **Naming:** `hash`
 - **Track changes:** `Yes`
 
@@ -182,6 +299,10 @@ ASSUMPTION / NOT YET IN THE WORDPRESS UI: project-detail.php's 'تقديم عر�
 | _Status_ (Section Break) | | | | | | | | | |
 | `status` | Status | Select | Submitted, Shortlisted, Accepted, Rejected, Withdrawn |  |  | Submitted | ✓ |  |  |
 | `submitted_at` | Submitted At | Datetime |  |  |  |  |  | ✓ |  |
+| `shortlisted_at` | Shortlisted At | Datetime |  |  |  |  |  | ✓ |  |
+| `accepted_at` | Accepted At | Datetime |  |  |  |  |  | ✓ |  |
+| `rejected_at` | Rejected At | Datetime |  |  |  |  |  | ✓ |  |
+| `withdrawn_at` | Withdrawn At | Datetime |  |  |  |  |  | ✓ |  |
 
 **Permissions**
 
@@ -235,8 +356,7 @@ A fixed-price service package published by a provider, shown by card-service.php
 | Role | Level | Read | Write | Create | Delete | If owner |
 |---|---|---|---|---|---|---|
 | System Manager | 0 | ✓ | ✓ | ✓ | ✓ |  |
-| Marketplace Moderator | 0 | ✓ | ✓ |  |  |  |
-| Guest | 0 | ✓ |  |  |  |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |
 | Invoicing Owner | 0 | ✓ | ✓ | ✓ | ✓ |  |
 
 ## Marketplace Specialty
@@ -273,3 +393,24 @@ Generic free-text label row, reused as the child table behind Marketplace Profil
 | Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
 |---|---|---|---|---|---|---|---|---|---|
 | `label` | Label | Data |  | ✓ |  |  | ✓ |  |  |
+
+## Marketplace User Achievement
+
+A user reaching an achievement. Created only by the server (gamification/service.py); unique per user and achievement.
+
+- **Module:** `Gamification`
+- **Naming:** `hash`
+
+| Fieldname | Label | Type | Options | Required | Unique | Default | In list | Read only | Level |
+|---|---|---|---|---|---|---|---|---|---|
+| `user` | User | Link | User | ✓ |  |  | ✓ |  |  |
+| `achievement` | Achievement | Link | Marketplace Achievement | ✓ |  |  | ✓ |  |  |
+| `achieved_at` | Achieved At | Datetime |  | ✓ |  |  | ✓ |  |  |
+| `unique_key` | Unique Key | Data |  | ✓ | ✓ |  |  |  |  |
+
+**Permissions**
+
+| Role | Level | Read | Write | Create | Delete | If owner |
+|---|---|---|---|---|---|---|
+| System Manager | 0 | ✓ |  |  | ✓ |  |
+| Marketplace Moderator | 0 | ✓ |  |  |  |  |

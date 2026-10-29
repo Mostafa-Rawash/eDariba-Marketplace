@@ -1,4 +1,4 @@
-"""Verified by default (services/verification.py), applied to existing rows.
+"""Verified by default (marketplace/verification.py), applied to existing rows.
 
 Scope: Marketplace Profiles whose verification_status is Pending or empty
 become Verified with verification_method "Automatic". Profiles already
@@ -8,14 +8,14 @@ touched: rejection is a moderator decision.
 
 Safe to re-run: it only changes rows that still match. Skipped entirely when
 site_config sets "marketplace_verification_required". Reversible with the
-UPDATE in services/verification.py (by verification_method = "Automatic").
+UPDATE in marketplace/verification.py (by verification_method = "Automatic").
 Plain UPDATEs, so no controller hooks run and modified is not bumped.
 """
 
 import frappe
 from frappe.utils import now_datetime
 
-from marketplace.services import verification
+from marketplace.marketplace import verification
 
 
 def execute():

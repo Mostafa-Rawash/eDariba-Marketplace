@@ -795,14 +795,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/method/marketplace.services.indexing_service.reconcile",
+              "raw": "{{base_url}}/api/method/marketplace.search.indexing_service.reconcile",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "method",
-                "marketplace.services.indexing_service.reconcile"
+                "marketplace.search.indexing_service.reconcile"
               ]
             },
             "body": {
