@@ -6,9 +6,9 @@ app; the task details are shown there after login.
 from collections import defaultdict
 
 import frappe
-from frappe.utils import formatdate, get_fullname, getdate, today
+from frappe.utils import add_days, formatdate, get_fullname, getdate, today
 
-from marketplace.office import rules
+from marketplace.office import access, rules
 
 DEFAULT_APP_URL = "https://app.edariba.com"
 
@@ -38,6 +38,14 @@ def _workspace_name(tenant):
 	return frappe.db.get_value("Tenant", tenant, "company_name") or ""
 
 
+def _names(doctype, field, names):
+	"""{name: field} for `names`, in one query."""
+	names = [n for n in names if n]
+	if not names:
+		return {}
+	return dict(frappe.get_all(doctype, filters={"name": ["in", names]}, fields=["name", field], as_list=True))
+
+
 def _company_name(company):
 	return (frappe.db.get_value("Company", company, "company_name") or company) if company else ""
 
@@ -61,19 +69,45 @@ def task_assigned(task):
 def send_due_reminders():
 	"""Daily (marketplace hooks.py scheduler_events): one email per assignee listing their
 	open tasks due tomorrow, today or earlier, across every office."""
-	done_columns = set(frappe.get_all("Office Task Column", filters={"is_done": 1}, pluck="name"))
+	now = getdate(today())
+	# Only what the reminder lists (rules.needs_reminder): open and due
+	# tomorrow or earlier. done_at is set when a task is saved into a done
+	# column; a column marked done later does not touch the tasks already in
+	# it, so those are filtered by column as well.
 	rows = frappe.get_all(
 		"Office Task",
-		filters={"assignee": ["is", "set"], "due_date": ["is", "set"], "done_at": ["is", "not set"]},
+		filters={
+			"assignee": ["is", "set"],
+			"due_date": ["<=", add_days(now, 1)],
+			"done_at": ["is", "not set"],
+		},
 		fields=["title", "tenant", "company", "assignee", "due_date", "board_column"],
 		order_by="due_date asc",
 	)
-	now = getdate(today())
+	done_columns = set(frappe.get_all(
+		"Office Task Column",
+		filters={"is_done": 1, "name": ["in", list({r.board_column for r in rows})]},
+		pluck="name",
+	)) if rows else set()
 	by_assignee = defaultdict(list)
+	people = {}
 	for row in rows:
-		done = row.board_column in done_columns
-		if rules.needs_reminder(row.due_date, done, now):
+		if row.board_column in done_columns:
+			continue
+		# Still in the office: its owner or an Active Employee. A suspended or
+		# removed employee keeps the assignment until the owner reassigns it,
+		# but no longer hears about the office's tasks.
+		if row.tenant not in people:
+			people[row.tenant] = {access.tenant_owner(row.tenant), *access.employees(row.tenant)}
+		if row.assignee in people[row.tenant]:
 			by_assignee[row.assignee].append(row)
+	if not by_assignee:
+		return
+
+	# Display names in two queries for the whole run, not two per task.
+	listed = [t for tasks in by_assignee.values() for t in tasks]
+	workspaces = _names("Tenant", "company_name", {t.tenant for t in listed})
+	companies = _names("Company", "company_name", {t.company for t in listed if t.company})
 
 	for assignee, tasks in by_assignee.items():
 		_send(
@@ -84,8 +118,8 @@ def send_due_reminders():
 				"tasks": [
 					{
 						"title": t.title,
-						"company": _company_name(t.company),
-						"workspace": _workspace_name(t.tenant),
+						"company": (companies.get(t.company) or t.company) if t.company else "",
+						"workspace": workspaces.get(t.tenant) or "",
 						"due_date": formatdate(t.due_date, "dd MMMM yyyy"),
 						"overdue": rules.is_overdue(t.due_date, False, now),
 					}

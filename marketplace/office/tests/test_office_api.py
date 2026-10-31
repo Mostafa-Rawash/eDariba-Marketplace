@@ -218,3 +218,24 @@ class TestReminders(OfficeCase):
 		titles = {t["title"] for t in calls[0].kwargs["args"]["tasks"]}
 		self.assertTrue({"مستحقة غدا", "متأخرة"} <= titles)
 		self.assertNotIn("بعيدة", titles)
+
+	def test_no_reminder_after_the_employee_leaves(self):
+		self.new_task(title="متأخرة", assignee=EMPLOYEE, due_date=add_days(today(), -1))
+		frappe.db.set_value("Member", EMPLOYEE_MEMBER, "status", "Removed")
+		self.mail.reset_mock()
+		notifications.send_due_reminders()
+		self.assertFalse([c for c in self.mail.call_args_list if c.kwargs.get("recipients") == [EMPLOYEE]])
+
+
+class TestDeletedCompany(OfficeCase):
+	def test_task_stays_workable_after_its_company_is_deleted(self):
+		# accounting's delete_company moves the Company to another tenant.
+		task = self.new_task(assignee=EMPLOYEE, company=C1)
+		frappe.db.set_value("Company", C1, "tenant", T2)
+		self.as_user(EMPLOYEE)
+		self.assertEqual(data(api.set_task_status(task, self.done_column))["board_column"], self.done_column)
+
+	def test_cannot_move_a_task_to_another_offices_company(self):
+		task = self.new_task(company=C1)
+		with self.assertRaises(frappe.PermissionError):
+			self.new_task(name=task, company=C3)

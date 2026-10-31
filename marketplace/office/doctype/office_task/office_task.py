@@ -30,7 +30,10 @@ class OfficeTask(Document):
 		column = frappe.db.get_value(access.COLUMN, self.board_column, ["tenant", "is_done"], as_dict=True)
 		if not column or column.tenant != self.tenant:
 			frappe.throw(_("Unknown board column"))
-		if self.company and frappe.db.get_value("Company", self.company, "tenant") != self.tenant:
+		# Only when the company is set or changed: accounting's delete_company
+		# moves a Company to another tenant, and its tasks must stay workable.
+		company_set = self.is_new() or self.has_value_changed("company")
+		if self.company and company_set and frappe.db.get_value("Company", self.company, "tenant") != self.tenant:
 			frappe.throw(_("You don't have access to this company"), frappe.PermissionError)
 
 		if self.is_new() or self.has_value_changed("assignee") or self.has_value_changed("company"):
