@@ -25,10 +25,12 @@ DOCTYPE_MODULES = {
 	"Marketplace Achievement": "Gamification",
 	"Marketplace User Achievement": "Gamification",
 }
+# Modules whose DocTypes are new (nothing to move), created up front too.
+NEW_MODULES = ("Office",)
 
 
 def execute():
-	for module in sorted(set(DOCTYPE_MODULES.values())):
+	for module in sorted(set(DOCTYPE_MODULES.values()) | set(NEW_MODULES)):
 		if not frappe.db.exists("Module Def", module):
 			frappe.get_doc({"doctype": "Module Def", "module_name": module, "app_name": APP}).insert(
 				ignore_permissions=True

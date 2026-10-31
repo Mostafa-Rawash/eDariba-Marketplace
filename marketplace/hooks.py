@@ -14,6 +14,8 @@ app_license = "proprietary"
 #   freelance/     Freelance: projects and proposals
 #   activity/      Activity: views, searches, clicks, daily metrics
 #   gamification/  Gamification: points ledger and achievements
+#   office/        Office: task board for accountants' offices (reads accounting's
+#                  workspace: Tenant, Member, Company; adds Member.member_type)
 # and plain packages with no DocTypes: search/ (Qdrant), stats/ (read models),
 # shared/ (envelope, filters, roles). api/ keeps the published URLs stable.
 #
@@ -35,7 +37,12 @@ app_license = "proprietary"
 # proposal status changes go through inquiries/api.py and freelance/api.py,
 # never /api/resource. Guest has no DocPerm on Profile, Service or Project:
 # the public site reads them through the modules' public_api.
-fixtures = [{"dt": "Role", "filters": [["name", "=", "Marketplace Moderator"]]}]
+fixtures = [
+	{"dt": "Role", "filters": [["name", "=", "Marketplace Moderator"]]},
+	# office/: Employee or Client on accounting's Member (a custom field, so the
+	# accounting code is untouched).
+	{"dt": "Custom Field", "filters": [["name", "=", "Member-member_type"]]},
+]
 
 permission_query_conditions = {
 	"Marketplace Profile": "marketplace.marketplace.permissions.profile_query_conditions",
@@ -43,6 +50,8 @@ permission_query_conditions = {
 	"Marketplace Project": "marketplace.freelance.permissions.project_query_conditions",
 	"Marketplace Proposal": "marketplace.freelance.permissions.proposal_query_conditions",
 	"Marketplace Inquiry": "marketplace.inquiries.permissions.inquiry_query_conditions",
+	"Office Task": "marketplace.office.permissions.task_query",
+	"Office Task Column": "marketplace.office.permissions.column_query",
 }
 
 has_permission = {
@@ -51,6 +60,8 @@ has_permission = {
 	"Marketplace Project": "marketplace.freelance.permissions.has_project_permission",
 	"Marketplace Proposal": "marketplace.freelance.permissions.has_proposal_permission",
 	"Marketplace Inquiry": "marketplace.inquiries.permissions.has_inquiry_permission",
+	"Office Task": "marketplace.office.permissions.has_task_permission",
+	"Office Task Column": "marketplace.office.permissions.has_column_permission",
 }
 
 # Cross-module reactions. Search indexing and gamification listen to the
@@ -98,5 +109,9 @@ doc_events = {
 
 scheduler_events = {
 	# Raw activity (views, searches, clicks) is kept 90 days; daily metrics stay.
-	"daily": ["marketplace.activity.events.purge_old_activity"],
+	"daily": [
+		"marketplace.activity.events.purge_old_activity",
+		# Office tasks due tomorrow or overdue: one email per assignee.
+		"marketplace.office.notifications.send_due_reminders",
+	],
 }

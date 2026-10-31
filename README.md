@@ -47,6 +47,9 @@ marketplace/
   gamification/           Frappe module "Gamification": points and achievements
     doctype/              Points Entry (ledger), Achievement, User Achievement
     rules.py  service.py  api.py (my_points, my_achievements)
+  office/                 Frappe module "Office": task board for accountants' offices
+    doctype/              Office Task, Office Task Column, Office Task Checklist Item
+    rules.py  access.py (reads accounting's workspace)  api.py  notifications.py
   search/                 no DocTypes: Qdrant + embedding clients, indexing,
                           intent router, semantic search;  public_api.py
   stats/                  no DocTypes: provider/admin read models;  api.py
@@ -115,6 +118,43 @@ modules before the schema sync. Tables and data don't change.
 - **Chat discovery is merged into search**: `search.search(auto_intent=1)`.
 - Everyone still goes through ETA onboarding in the app (J2); nothing here
   changes that.
+
+## Office task board (2026-10-29)
+
+An accountant's office is an `accounting` workspace: the Tenant's Owner runs
+it, and its Members work in it. The board lets the owner create tasks
+(optionally about one client company), assign them to employees and follow
+their status. Every account can use it.
+
+- **Employee or Client.** Accounting's Member gets a `member_type` custom
+  field (fixture `fixtures/custom_field.json`; accounting code is untouched),
+  default Client. The app calls accounting's `invite_team_member`, then
+  `marketplace.office.api.set_member_type`. `member_types` lists them for the
+  team screen.
+- **Who sees what** (`office/rules.py`):
+
+  | Who | Sees | Can do |
+  |---|---|---|
+  | Owner | every task in the office | everything, including managing the columns |
+  | Employee | tasks assigned to them, and tasks on companies in their `allowed_companies` | change the status and tick the checklist of their own tasks; comment |
+  | Client | nothing | – |
+
+- **Assigning.** Only the owner or an Active Employee can be assigned. An
+  Employee must also have access to the task's company.
+- **Board.** `get_board` is read-only and owner-only (no drag and drop).
+  Employees use `my_tasks` and `set_task_status`.
+- **Columns.** Each office edits its own with `save_columns` (1–10 columns, at
+  least one "done"). The four defaults (جديد / قيد التنفيذ / مراجعة / تم) are
+  created the first time the board opens. A column that still has tasks can't
+  be deleted.
+- **Emails.** One when a task is assigned. A daily job emails each assignee
+  their tasks due tomorrow or overdue. Both link to
+  `{marketplace_app_url}/office/tasks`.
+- **Data access.** The office reads accounting's Tenant, Member, Company and
+  Prefrances read-only, through `accounting.tenant.workspace`. Only
+  `office/access.py` imports accounting. App users have no DocPerm on the
+  office DocTypes: everything goes through `office/api.py`, and the permission
+  hooks keep each office to its own rows in Desk too.
 
 ## Roles (2026-10-29)
 
