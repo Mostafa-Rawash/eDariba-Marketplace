@@ -28,4 +28,4 @@ class TestMarketplaceInquiry(unittest.TestCase):
 
 	def test_guest_cannot_create(self):
 		# S1: requests are created only through inquiries/api.submit_request.
-		self.assertFalse(has_inquiry_permission(self._doc(), user="Guest", permission_type="create"))
+		self.assertFalse(has_inquiry_permission(self._doc(), user="Guest", ptype="create"))

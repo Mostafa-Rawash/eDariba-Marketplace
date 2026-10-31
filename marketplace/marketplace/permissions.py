@@ -26,7 +26,7 @@ so the Guest branches below only matter for future DocTypes.
 
 import frappe
 
-from marketplace.shared.permissions import is_moderator, published_condition, sees_all
+from marketplace.shared.permissions import is_moderator, is_read, published_condition, sees_all, stored_value
 
 
 # ---------------------------------------------------------------- Profile ---
@@ -38,13 +38,13 @@ def profile_query_conditions(user: str) -> str:
 	return f"({published_condition('tabMarketplace Profile')} OR {owned})"
 
 
-def has_profile_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
+def has_profile_permission(doc, ptype: str | None = None, user: str | None = None, debug: bool = False) -> bool:
 	user = user or frappe.session.user
-	if sees_all(user, permission_type):
+	if sees_all(user, ptype):
 		return True
-	if doc.publication_status == "Published" and permission_type in (None, "read"):
+	if doc.publication_status == "Published" and is_read(ptype):
 		return True
-	return doc.user == user
+	return stored_value(doc, "user", ptype) == user
 
 
 # ---------------------------------------------------------------- Service ---
@@ -59,11 +59,11 @@ def service_query_conditions(user: str) -> str:
 	return f"({published_condition('tabMarketplace Service')} OR {owned})"
 
 
-def has_service_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
+def has_service_permission(doc, ptype: str | None = None, user: str | None = None, debug: bool = False) -> bool:
 	user = user or frappe.session.user
-	if sees_all(user, permission_type):
+	if sees_all(user, ptype):
 		return True
-	if doc.publication_status == "Published" and permission_type in (None, "read"):
+	if doc.publication_status == "Published" and is_read(ptype):
 		return True
-	owner_user = frappe.db.get_value("Marketplace Profile", doc.provider, "user")
+	owner_user = frappe.db.get_value("Marketplace Profile", stored_value(doc, "provider", ptype), "user")
 	return owner_user == user

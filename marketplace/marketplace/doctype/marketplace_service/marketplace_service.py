@@ -19,8 +19,12 @@ class MarketplaceService(IdentityMaskedDocument):
 		"""A provider may only publish services under their own profile."""
 		if can_edit_any():
 			return
+		if not self.is_new() and self.has_value_changed("provider"):
+			# Moving a service would hand it to another profile (or take
+			# someone else's): the check below sees only the new provider.
+			frappe.throw(_("You can only manage services under your own profile."), frappe.PermissionError)
 		owner_user = frappe.db.get_value("Marketplace Profile", self.provider, "user")
-		if owner_user and owner_user != frappe.session.user:
+		if owner_user != frappe.session.user:
 			frappe.throw(_("You can only manage services under your own profile."))
 
 	def _guard_publish_transition(self):

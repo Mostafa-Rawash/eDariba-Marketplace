@@ -257,3 +257,69 @@ class TestPrivacyAndCounts(IntegrationCase):
 			).insert(ignore_permissions=True)
 		self.assertEqual(len(repository.published_services_for_provider(profile)), 20)
 		self.assertEqual(repository.count_published_services(profile), 25)
+
+
+def _service(provider, slug):
+	frappe.set_user("Administrator")
+	return frappe.get_doc(
+		{
+			"doctype": "Marketplace Service",
+			"title": slug,
+			"slug": slug,
+			"provider": provider,
+			"currency": "EGP",
+			"price_unit": "Total",
+			"description": "D",
+			"publication_status": "Published",
+		}
+	).insert(ignore_permissions=True)
+
+
+class TestOwnRecordsOnly(IntegrationCase):
+	"""The has_permission hooks get the permission type from Frappe as `ptype`.
+	When they named it anything else, every check counted as a read, so any
+	app user could edit a published profile and delete a published service."""
+
+	def setUp(self):
+		super().setUp()
+		if not frappe.db.exists("Role", "Invoicing Owner"):
+			self.skipTest("needs accounting's Invoicing Owner role")
+		for email in (FREELANCER, STRANGER):
+			user = frappe.get_doc("User", email)
+			if "Invoicing Owner" not in frappe.get_roles(email):
+				user.add_roles("Invoicing Owner")
+		self.victim = _profile(FREELANCER, "it-victim").name
+		self.mine = _profile(STRANGER, "it-stranger").name
+		self.service = _service(self.victim, "it-victim-service").name
+
+	def allowed(self, doctype, ptype, doc, user):
+		return frappe.has_permission(doctype, ptype, doc=doc, user=user)
+
+	def test_others_read_but_do_not_change_published_records(self):
+		profile = frappe.get_doc("Marketplace Profile", self.victim)
+		service = frappe.get_doc("Marketplace Service", self.service)
+		self.assertTrue(self.allowed("Marketplace Profile", "read", profile, STRANGER))
+		self.assertFalse(self.allowed("Marketplace Profile", "write", profile, STRANGER))
+		self.assertTrue(self.allowed("Marketplace Service", "read", service, STRANGER))
+		self.assertFalse(self.allowed("Marketplace Service", "write", service, STRANGER))
+		self.assertFalse(self.allowed("Marketplace Service", "delete", service, STRANGER))
+		self.assertTrue(self.allowed("Marketplace Service", "delete", service, FREELANCER))
+
+	def test_ownership_comes_from_the_stored_row_not_the_payload(self):
+		profile = frappe.get_doc("Marketplace Profile", self.victim)
+		profile.user = STRANGER
+		self.assertFalse(self.allowed("Marketplace Profile", "write", profile, STRANGER))
+		service = frappe.get_doc("Marketplace Service", self.service)
+		service.provider = self.mine
+		self.assertFalse(self.allowed("Marketplace Service", "write", service, STRANGER))
+
+	def test_controllers_refuse_edits_by_someone_else(self):
+		frappe.set_user(STRANGER)
+		profile = frappe.get_doc("Marketplace Profile", self.victim)
+		profile.headline = "changed"
+		with self.assertRaises(frappe.PermissionError):
+			profile.save(ignore_permissions=True)
+		service = frappe.get_doc("Marketplace Service", self.service)
+		service.provider = self.mine
+		with self.assertRaises(frappe.PermissionError):
+			service.save(ignore_permissions=True)

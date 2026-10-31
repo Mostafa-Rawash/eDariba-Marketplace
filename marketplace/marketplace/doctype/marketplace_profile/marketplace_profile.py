@@ -25,6 +25,10 @@ class MarketplaceProfile(IdentityMaskedDocument):
 	def _guard_protected_fields(self):
 		if self.is_new() or can_edit_any():
 			return
+		# Only the owner edits a profile, whatever the permission hooks allowed.
+		before = self.get_doc_before_save()
+		if before and before.user != frappe.session.user:
+			frappe.throw(_("You can only edit your own profile."), frappe.PermissionError)
 		changed = [f for f in PROTECTED_FIELDS + ("company",) if self.has_value_changed(f)]
 		if changed:
 			frappe.throw(_("These fields cannot be changed: {0}").format(", ".join(changed)), frappe.PermissionError)

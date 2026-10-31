@@ -4,7 +4,7 @@ changes go through freelance/api.py."""
 
 import frappe
 
-from marketplace.shared.permissions import is_moderator, published_condition, sees_all
+from marketplace.shared.permissions import is_moderator, is_read, published_condition, sees_all, stored_value
 
 
 # ---------------------------------------------------------------- Project ---
@@ -16,13 +16,13 @@ def project_query_conditions(user: str) -> str:
 	return f"({published_condition('tabMarketplace Project')} OR {owned})"
 
 
-def has_project_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
+def has_project_permission(doc, ptype: str | None = None, user: str | None = None, debug: bool = False) -> bool:
 	user = user or frappe.session.user
-	if sees_all(user, permission_type):
+	if sees_all(user, ptype):
 		return True
-	if doc.publication_status == "Published" and permission_type in (None, "read"):
+	if doc.publication_status == "Published" and is_read(ptype):
 		return True
-	return doc.client == user
+	return stored_value(doc, "client", ptype) == user
 
 
 # --------------------------------------------------------------- Proposal ---
@@ -42,11 +42,11 @@ def proposal_query_conditions(user: str) -> str:
 	return f"({as_freelancer} OR {as_client})"
 
 
-def has_proposal_permission(doc, user: str | None = None, permission_type: str | None = None) -> bool:
+def has_proposal_permission(doc, ptype: str | None = None, user: str | None = None, debug: bool = False) -> bool:
 	user = user or frappe.session.user
-	if sees_all(user, permission_type):
+	if sees_all(user, ptype):
 		return True
-	if doc.submitted_by == user:
+	if stored_value(doc, "submitted_by", ptype) == user:
 		return True
-	project_client = frappe.db.get_value("Marketplace Project", doc.project, "client")
+	project_client = frappe.db.get_value("Marketplace Project", stored_value(doc, "project", ptype), "client")
 	return project_client == user
