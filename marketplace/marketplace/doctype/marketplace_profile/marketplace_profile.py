@@ -2,11 +2,11 @@ import frappe
 from frappe import _
 from frappe.utils import now_datetime
 
-from marketplace.marketplace.permissions import is_moderator
-from marketplace.services import profile_completion, verification
-from marketplace.services.privacy import IdentityMaskedDocument
+from marketplace.marketplace import profile_completion, verification
+from marketplace.marketplace.privacy import IdentityMaskedDocument
+from marketplace.shared.permissions import can_edit_any
 
-# Set only by the server (controller, services/profile_handle.py, moderators).
+# Set only by the server (controller, marketplace/profile_handle.py) or a System Manager.
 # An owner's save through /api/resource cannot change them.
 PROTECTED_FIELDS = ("user", "slug", "previous_slugs", "verification_method", "verified_at", "published_at")
 
@@ -23,17 +23,18 @@ class MarketplaceProfile(IdentityMaskedDocument):
 		self._check_specialties()
 
 	def _guard_protected_fields(self):
-		if self.is_new() or is_moderator():
+		if self.is_new() or can_edit_any():
 			return
 		changed = [f for f in PROTECTED_FIELDS + ("company",) if self.has_value_changed(f)]
 		if changed:
 			frappe.throw(_("These fields cannot be changed: {0}").format(", ".join(changed)), frappe.PermissionError)
 
 	def _apply_verification_policy(self):
-		"""See services/verification.py: verified by default while verification
-		is bypassed; only moderators change the status by hand."""
+		"""See marketplace/verification.py: verified by default while verification
+		is bypassed; only a System Manager changes the status by hand (support
+		cannot; a verifier role comes later)."""
 		required = verification.verification_required()
-		moderator = is_moderator()
+		editor = can_edit_any()
 		if self.is_new():
 			self.verification_status, self.verification_method = verification.status_for_new_profile(required)
 			self.verified_at = now_datetime() if self.verification_status == verification.VERIFIED else None
@@ -41,12 +42,12 @@ class MarketplaceProfile(IdentityMaskedDocument):
 
 		if self.has_value_changed("verification_status"):
 			previous = self.get_doc_before_save().verification_status
-			if moderator:
+			if editor:
 				verified = self.verification_status == verification.VERIFIED
 				self.verification_method = verification.MODERATOR if verified else None
 				self.verified_at = now_datetime() if verified else None
 			elif not verification.owner_may_change(previous, self.verification_status, required):
-				frappe.throw(_("Only a moderator can change verification status."), frappe.PermissionError)
+				frappe.throw(_("Only an administrator can change verification status."), frappe.PermissionError)
 
 		if verification.auto_verify(self.verification_status, required):
 			self.verification_status = verification.VERIFIED

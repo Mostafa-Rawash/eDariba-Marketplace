@@ -19,7 +19,7 @@ def _profile(**overrides):
 
 
 class TestMarketplaceProfile(unittest.TestCase):
-	# Verification is bypassed (services/verification.py): verified by default.
+	# Verification is bypassed (marketplace/verification.py): verified by default.
 	def test_new_profile_is_verified_automatically(self):
 		doc = _profile()
 		doc.validate()

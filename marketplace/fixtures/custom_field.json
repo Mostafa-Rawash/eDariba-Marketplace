@@ -1,0 +1,16 @@
+[
+ {
+  "doctype": "Custom Field",
+  "name": "Member-member_type",
+  "dt": "Member",
+  "module": "Office",
+  "fieldname": "member_type",
+  "fieldtype": "Select",
+  "label": "Member Type",
+  "options": "Client\nEmployee",
+  "default": "Client",
+  "insert_after": "status",
+  "in_list_view": 1,
+  "description": "Added by the marketplace app (office module). Employee: works in the owner's office and can be assigned office tasks. Client: a company owner the office works for; never sees the task board."
+ }
+]

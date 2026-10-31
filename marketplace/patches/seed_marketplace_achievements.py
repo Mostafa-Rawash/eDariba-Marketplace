@@ -2,7 +2,7 @@
 edit or deactivate them from the desk. Re-running adds missing codes only.
 
 Definitions only: nobody is awarded anything here. Users reach achievements
-the next time an event triggers evaluation (services/gamification.py).
+the next time an event triggers evaluation (gamification/service.py).
 """
 
 import frappe

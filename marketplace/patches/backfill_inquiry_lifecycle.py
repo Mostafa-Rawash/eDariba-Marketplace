@@ -16,8 +16,8 @@ not in the history and stays empty for old requests.
 
 import json
 
-from marketplace.services.request_rules import ANSWER_STATUSES
-from marketplace.services.request_rules import TIMESTAMP_FIELDS as STATUS_FIELDS
+from marketplace.inquiries.rules import ANSWER_STATUSES
+from marketplace.inquiries.rules import TIMESTAMP_FIELDS as STATUS_FIELDS
 ALL_FIELDS = ["first_responded_at", *STATUS_FIELDS.values()]
 
 

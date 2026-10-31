@@ -2,8 +2,8 @@ import frappe
 from frappe import _
 from frappe.utils import now_datetime
 
-from marketplace.marketplace.permissions import is_moderator
-from marketplace.services.privacy import IdentityMaskedDocument
+from marketplace.marketplace.privacy import IdentityMaskedDocument
+from marketplace.shared.permissions import can_edit_any
 
 
 class MarketplaceService(IdentityMaskedDocument):
@@ -17,7 +17,7 @@ class MarketplaceService(IdentityMaskedDocument):
 
 	def _guard_ownership(self):
 		"""A provider may only publish services under their own profile."""
-		if frappe.session.user == "Administrator" or is_moderator():
+		if can_edit_any():
 			return
 		owner_user = frappe.db.get_value("Marketplace Profile", self.provider, "user")
 		if owner_user and owner_user != frappe.session.user:

@@ -65,7 +65,7 @@
       "fieldtype": "Small Text",
       "label": "Previous Slugs",
       "read_only": 1,
-      "description": "Handles this profile had before, one per line, oldest first. Set when the owner's username changes (services/profile_handle.py); old public links resolve through them and redirect to the current slug."
+      "description": "Handles this profile had before, one per line, oldest first. Set when the owner's username changes (marketplace/profile_handle.py); old public links resolve through them and redirect to the current slug."
     },
     {
       "fieldname": "headline",
@@ -183,7 +183,7 @@
       "label": "Verification Status",
       "in_list_view": 1,
       "in_standard_filter": 1,
-      "description": "Verified by default while verification is bypassed (services/verification.py); Pending profiles are verified on save. Only a moderator can change it by hand (controller guard). Permlevel 0 so the owner can read their own status."
+      "description": "Verified by default while verification is bypassed (marketplace/verification.py); Pending profiles are verified on save. Only a moderator can change it by hand (controller guard). Permlevel 0 so the owner can read their own status."
     },
     {
       "fieldname": "verification_method",
@@ -230,8 +230,8 @@
     {
       "role": "Marketplace Moderator",
       "read": 1,
-      "write": 1,
-      "create": 1,
+      "write": 0,
+      "create": 0,
       "delete": 0
     },
     {
@@ -244,7 +244,7 @@
       "role": "Marketplace Moderator",
       "permlevel": 1,
       "read": 1,
-      "write": 1
+      "write": 0
     },
     {
       "role": "Invoicing Owner",

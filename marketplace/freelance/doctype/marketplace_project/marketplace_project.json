@@ -1,0 +1,213 @@
+{
+  "doctype": "DocType",
+  "name": "Marketplace Project",
+  "module": "Freelance",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "field:slug",
+  "naming_rule": "By fieldname",
+  "track_changes": 1,
+  "engine": "InnoDB",
+  "title_field": "title",
+  "search_fields": "title,slug,category",
+  "description": "A freelance project posted by a client, shown by card-project.php, project-detail.php, and the projects.php catalog. 'proposals_count' was already removed from the live UI in a prior pass (it is now derived by counting Marketplace Proposal rows, not stored).",
+  "fields": [
+    {
+      "fieldname": "title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "slug",
+      "fieldtype": "Data",
+      "label": "Slug",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "category",
+      "fieldtype": "Link",
+      "options": "Marketplace Category",
+      "label": "Category",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "column_break_client",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "client",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "Client",
+      "reqd": 1,
+      "in_standard_filter": 1,
+      "description": "Linked to User directly, not to Marketplace Profile — a project poster is a client/business, not necessarily a listed service provider. Avoids inventing a second client-account entity. Public pages show client_display_name instead. Permlevel 1: hidden from Guest (public /api/resource reads); only System Manager and Marketplace Moderator see it.",
+      "permlevel": 1,
+      "default": "__user"
+    },
+    {
+      "fieldname": "client_display_name",
+      "fieldtype": "Data",
+      "label": "Client Display Name",
+      "reqd": 1,
+      "description": "Public label shown on the card, e.g. 'متجر أزياء إلكتروني' — intentionally not the client's real account name, matching current anonymized display in card-project.php/project-detail.php."
+    },
+    {
+      "fieldname": "client_type",
+      "fieldtype": "Select",
+      "options": "شركة ناشئة\nمنشأة صغيرة\nشركة متوسطة\nشركة قيد التأسيس\nمجموعة شركات\nمنظمة غير ربحية",
+      "label": "Client Type",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "Exact literal values already used as client_type across Dummy_Data_Provider::all_projects()."
+    },
+    {
+      "fieldname": "section_break_brief",
+      "fieldtype": "Section Break",
+      "label": "Brief"
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Text Editor",
+      "label": "Description",
+      "reqd": 1
+    },
+    {
+      "fieldname": "required_skills",
+      "fieldtype": "Table",
+      "options": "Marketplace Tag",
+      "label": "Required Skills"
+    },
+    {
+      "fieldname": "section_break_budget",
+      "fieldtype": "Section Break",
+      "label": "Budget & Deadline"
+    },
+    {
+      "fieldname": "budget_min",
+      "fieldtype": "Currency",
+      "label": "Budget Min",
+      "reqd": 1,
+      "non_negative": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "budget_max",
+      "fieldtype": "Currency",
+      "label": "Budget Max",
+      "reqd": 1,
+      "non_negative": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "currency",
+      "fieldtype": "Data",
+      "label": "Currency",
+      "default": "ج.م",
+      "reqd": 1
+    },
+    {
+      "fieldname": "column_break_deadline",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "deadline",
+      "fieldtype": "Date",
+      "label": "Deadline",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "escrow",
+      "fieldtype": "Check",
+      "label": "Escrow Protected",
+      "default": "1",
+      "description": "Drives the 'دفع محمي Escrow' badge shown conditionally on card-project.php and project-detail.php."
+    },
+    {
+      "fieldname": "section_break_status",
+      "fieldtype": "Section Break",
+      "label": "Status"
+    },
+    {
+      "fieldname": "publication_status",
+      "fieldtype": "Select",
+      "options": "Draft\nPublished\nClosed\nArchived",
+      "default": "Draft",
+      "label": "Publication Status",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "Dummy data only ever used 'open'; Closed/Archived are added because a real project marketplace needs to stop accepting proposals once filled or expired."
+    },
+    {
+      "fieldname": "published_at",
+      "fieldtype": "Datetime",
+      "label": "Published At",
+      "read_only": 1
+    },
+    {
+      "fieldname": "closed_at",
+      "fieldtype": "Datetime",
+      "label": "Closed At",
+      "read_only": 1,
+      "description": "First time the project was closed (e.g. by accepting a proposal). Never overwritten."
+    },
+    {
+      "fieldname": "accepted_proposal",
+      "fieldtype": "Link",
+      "options": "Marketplace Proposal",
+      "label": "Accepted Proposal",
+      "read_only": 1
+    },
+    {
+      "fieldname": "support_note",
+      "fieldtype": "Small Text",
+      "label": "Support Note",
+      "read_only": 1,
+      "description": "Why the support team closed the project (freelance/api.py support_close_project). Set by the server."
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    },
+    {
+      "role": "System Manager",
+      "permlevel": 1,
+      "read": 1,
+      "write": 1
+    },
+    {
+      "role": "Marketplace Moderator",
+      "permlevel": 1,
+      "read": 1,
+      "write": 0
+    },
+    {
+      "role": "Invoicing Owner",
+      "permlevel": 0,
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0
+    }
+  ]
+}
