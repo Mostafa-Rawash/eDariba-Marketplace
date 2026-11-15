@@ -103,8 +103,14 @@ def rename_profile(old: str, new: str):
 	history = [s for s in history if s != new] + [old]
 	# Permissions were checked on the User save that triggered this: the owner
 	# renames only their own profile. force: the DocType has allow_rename off so
-	# nobody renames profiles from the desk by hand.
-	frappe.rename_doc(PROFILE, old, new, force=True, ignore_permissions=True, show_alert=False)
+	# nobody renames profiles from the desk by hand. rename_doc no longer takes
+	# ignore_permissions, so the rename runs as Administrator.
+	user = frappe.session.user
+	frappe.set_user("Administrator")
+	try:
+		frappe.rename_doc(PROFILE, old, new, force=True, show_alert=False)
+	finally:
+		frappe.set_user(user)
 	frappe.db.set_value(PROFILE, new, {"slug": new, "previous_slugs": "\n".join(history)}, update_modified=False)
 
 	# Search index: drop the old point, index the new name.

@@ -83,11 +83,11 @@
       "fieldname": "governorate",
       "fieldtype": "Select",
       "label": "Governorate",
-      "options": "القاهرة\nالجيزة\nالإسكندرية\nالشرقية\nالدقهلية",
+      "options": "القاهرة\nالجيزة\nالإسكندرية\nالقليوبية\nالشرقية\nالدقهلية\nالغربية\nالمنوفية\nالبحيرة\nكفر الشيخ\nدمياط\nبورسعيد\nالإسماعيلية\nالسويس\nشمال سيناء\nجنوب سيناء\nالفيوم\nبني سويف\nالمنيا\nأسيوط\nسوهاج\nقنا\nالأقصر\nأسوان\nالبحر الأحمر\nالوادي الجديد\nمطروح",
       "reqd": 1,
       "in_list_view": 1,
       "in_standard_filter": 1,
-      "description": "Fixed list copied from Dummy_Data_Provider::governorates(). Plain Select (not a Link taxonomy) because the list is small, stable, and only ever used for this one filter today -- add options here if more governorates are needed, no new DocType required."
+      "description": "Egypt's 27 governorates. Plain Select (not a Link taxonomy) because the list is fixed and only used for this one filter; the metadata API serves these options to the app and the WordPress site."
     },
     {
       "fieldname": "area",
