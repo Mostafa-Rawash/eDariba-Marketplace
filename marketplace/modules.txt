@@ -3,4 +3,3 @@ Inquiries
 Freelance
 Activity
 Gamification
-Office

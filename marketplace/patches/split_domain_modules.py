@@ -26,7 +26,8 @@ DOCTYPE_MODULES = {
 	"Marketplace User Achievement": "Gamification",
 }
 # Modules whose DocTypes are new (nothing to move), created up front too.
-NEW_MODULES = ("Office",)
+# "Office" was here until it moved to its own app, `office` (2026-11-15).
+NEW_MODULES = ()
 
 
 def execute():
